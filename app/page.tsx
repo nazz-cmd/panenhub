@@ -1071,27 +1071,42 @@ export default function PanenHubTokopediaApp() {
                   )}
                 </div>
 
-                {/* Clean Rounded Search Bar */}
-                <div className="flex-1 max-w-4xl min-w-0">
-                  <div className="relative flex items-center">
-                    <Search className="w-4 h-4 absolute left-3 text-[#8d96aa]" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Cari sayur, ikan, buah, bumbu..."
-                      className="w-full pl-9 pr-8 py-2 rounded-lg bg-[#f3f4f5]/60 hover:bg-[#f3f4f5] focus:bg-white border border-[#e5e7e9] text-[13px] text-[#212121] placeholder:text-[#8d96aa] font-normal focus:outline-none focus:border-[#03ac0e] transition"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-2.5 text-[#8d96aa] hover:text-[#212121] outline-none cursor-pointer"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    )}
+                {/* Clean Rounded Search Bar OR Ticket View Header */}
+                {activeNavTab === 'pesanan' ? (
+                  <div className="flex-1 flex items-center justify-between min-w-0">
+                    <button
+                      onClick={() => setActiveNavTab('for_you')}
+                      className="px-3 py-1.5 rounded-lg border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition flex items-center gap-1.5 outline-none cursor-pointer shrink-0"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5 rotate-180" />
+                      <span>Kembali Belanja</span>
+                    </button>
+                    <span className="text-xs sm:text-sm font-bold text-[#212121] truncate ml-2">
+                      Tiket Ambil Saya ({orders.length})
+                    </span>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex-1 max-w-4xl min-w-0">
+                    <div className="relative flex items-center">
+                      <Search className="w-4 h-4 absolute left-3 text-[#8d96aa]" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Cari sayur, ikan, buah, bumbu..."
+                        className="w-full pl-9 pr-8 py-2 rounded-lg bg-[#f3f4f5]/60 hover:bg-[#f3f4f5] focus:bg-white border border-[#e5e7e9] text-[13px] text-[#212121] placeholder:text-[#8d96aa] font-normal focus:outline-none focus:border-[#03ac0e] transition"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="absolute right-2.5 text-[#8d96aa] hover:text-[#212121] outline-none cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Shopping Cart Icon with Badge */}
                 <div
@@ -1117,10 +1132,16 @@ export default function PanenHubTokopediaApp() {
                       setIsCartOpen(false);
                       setActiveNavTab('pesanan');
                     }}
-                    className="px-3.5 py-1.5 rounded-lg border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-medium transition flex items-center gap-1.5 outline-none cursor-pointer"
+                    className={`px-3.5 py-1.5 rounded-lg border text-xs font-medium transition flex items-center gap-1.5 outline-none cursor-pointer ${
+                      activeNavTab === 'pesanan'
+                        ? 'bg-[#03ac0e] text-white border-[#03ac0e]'
+                        : 'border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9]'
+                    }`}
                   >
                     <span>Tiket Ambil</span>
-                    <span className="bg-[#03ac0e] text-white text-[10px] px-1.5 py-0.2 rounded-full font-medium">
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium ${
+                      activeNavTab === 'pesanan' ? 'bg-white text-[#03ac0e]' : 'bg-[#03ac0e] text-white'
+                    }`}>
                       {orders.length}
                     </span>
                   </button>
@@ -1135,62 +1156,65 @@ export default function PanenHubTokopediaApp() {
 
               </div>
 
-              {/* Simple Clean Delivery Location Bar */}
-              <div className="flex items-center justify-between gap-2.5 pt-2 text-[11px] sm:text-[12px] text-[#6d7588]">
-                <div
-                  onClick={() => setIsWarungModalOpen(true)}
-                  className="flex items-center gap-1.5 text-[#4b5563] hover:text-[#03ac0e] cursor-pointer font-normal truncate min-w-0 group"
-                  title="Klik untuk memilih titik ambil"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-[#03ac0e] shrink-0" />
-                  <span className="truncate">
-                    Titik Ambil: <strong className="font-semibold text-[#212121]">{selectedLocation.name}</strong> <span className="hidden sm:inline text-[#6d7588]">({selectedLocation.address.split(',')[0]})</span>
-                  </span>
-                  <ChevronDown className="w-3 h-3 text-[#8d96aa] shrink-0 group-hover:text-[#03ac0e]" />
-                </div>
-
-                <div className="flex items-center shrink-0">
-                  <button
+              {/* Simple Clean Delivery Location Bar - Only visible in catalog mode */}
+              {activeNavTab !== 'pesanan' && (
+                <div className="flex items-center justify-between gap-2.5 pt-2 text-[11px] sm:text-[12px] text-[#6d7588]">
+                  <div
                     onClick={() => setIsWarungModalOpen(true)}
-                    className="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-[#03ac0e] font-semibold text-[11px] sm:text-xs border border-emerald-200 transition outline-none cursor-pointer shadow-2xs"
+                    className="flex items-center gap-1.5 text-[#4b5563] hover:text-[#03ac0e] cursor-pointer font-normal truncate min-w-0 group"
+                    title="Klik untuk memilih titik ambil"
                   >
-                    Ubah Titik
-                  </button>
+                    <MapPin className="w-3.5 h-3.5 text-[#03ac0e] shrink-0" />
+                    <span className="truncate">
+                      Titik Ambil: <strong className="font-semibold text-[#212121]">{selectedLocation.name}</strong> <span className="hidden sm:inline text-[#6d7588]">({selectedLocation.address.split(',')[0]})</span>
+                    </span>
+                    <ChevronDown className="w-3 h-3 text-[#8d96aa] shrink-0 group-hover:text-[#03ac0e]" />
+                  </div>
+
+                  <div className="flex items-center shrink-0">
+                    <button
+                      onClick={() => setIsWarungModalOpen(true)}
+                      className="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-[#03ac0e] font-semibold text-[11px] sm:text-xs border border-emerald-200 transition outline-none cursor-pointer shadow-2xs"
+                    >
+                      Ubah Titik
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            {/* Horizontal Category Navigation Bar - ONLY ON CATALOG VIEWS */}
+            {activeNavTab !== 'pesanan' && (
+              <div className="border-t border-[#e5e7e9] bg-white px-4 sm:px-6 lg:px-8 py-2">
+                <div className="w-full max-w-[1720px] mx-auto flex items-center gap-2 overflow-x-auto scrollbar-none text-[13px] py-0.5">
+                  {[
+                    { id: 'for_you', label: 'Semua Panen', icon: '✨' },
+                    { id: 'flash_sale', label: 'Panen Hari Ini', icon: '🔥' },
+                    { id: 'sayur', label: 'Sayuran Segar', icon: '🥬' },
+                    { id: 'seafood', label: 'Hasil Laut & Ikan', icon: '🐟' },
+                    { id: 'buah', label: 'Buah & Tomat', icon: '🍎' },
+                    { id: 'bumbu', label: 'Bumbu Dapur', icon: '🌶️' },
+                  ].map(tab => {
+                    const isActive = activeNavTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleSelectCategory(tab.id)}
+                        className={`px-3.5 py-1.5 rounded-full transition-all duration-200 whitespace-nowrap text-xs flex items-center gap-1.5 select-none outline-none cursor-pointer ${
+                          isActive
+                            ? 'bg-[#03ac0e] text-white font-semibold shadow-xs scale-[1.02]'
+                            : 'bg-[#f8f9fa] border border-[#e5e7e9] text-[#6d7588] font-normal hover:border-[#03ac0e]/50 hover:text-[#03ac0e] hover:bg-emerald-50/50'
+                        }`}
+                      >
+                        <span className="text-sm">{tab.icon}</span>
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-
-            </div>
-
-            {/* Horizontal Category Navigation Bar */}
-            <div className="border-t border-[#e5e7e9] bg-white px-4 sm:px-6 lg:px-8 py-2">
-              <div className="w-full max-w-[1720px] mx-auto flex items-center gap-2 overflow-x-auto scrollbar-none text-[13px] py-0.5">
-                {[
-                  { id: 'for_you', label: 'Semua Panen', icon: '✨' },
-                  { id: 'flash_sale', label: 'Panen Hari Ini', icon: '🔥' },
-                  { id: 'sayur', label: 'Sayuran Segar', icon: '🥬' },
-                  { id: 'seafood', label: 'Hasil Laut & Ikan', icon: '🐟' },
-                  { id: 'buah', label: 'Buah & Tomat', icon: '🍎' },
-                  { id: 'bumbu', label: 'Bumbu Dapur', icon: '🌶️' },
-                  { id: 'pesanan', label: `Tiket Ambil (${orders.length})`, icon: '🎟️' }
-                ].map(tab => {
-                  const isActive = activeNavTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleSelectCategory(tab.id)}
-                      className={`px-3.5 py-1.5 rounded-full transition-all duration-200 whitespace-nowrap text-xs flex items-center gap-1.5 select-none outline-none cursor-pointer ${
-                        isActive
-                          ? 'bg-[#03ac0e] text-white font-semibold shadow-xs scale-[1.02]'
-                          : 'bg-[#f8f9fa] border border-[#e5e7e9] text-[#6d7588] font-normal hover:border-[#03ac0e]/50 hover:text-[#03ac0e] hover:bg-emerald-50/50'
-                      }`}
-                    >
-                      <span className="text-sm">{tab.icon}</span>
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            )}
           </header>
         </>
       )}
@@ -1198,57 +1222,77 @@ export default function PanenHubTokopediaApp() {
       {/* ── 2. PRODUCER MODE HEADER (PORTAL MITRA TANI & NELAYAN) ── */}
       {activePov === 'producer' && (
         <header className="sticky top-0 z-40 bg-white border-b border-[#e5e7e9] shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
-          <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               
-              {/* Left: Logo & Tokopedia Seller Partner Identity */}
-              <div className="flex items-center gap-3">
-                <div
-                  onClick={handleLogoutToGateway}
-                  className="cursor-pointer"
-                  title="Kembali ke Beranda PanenHub"
-                >
-                  <PanenHubLogo size="md" />
+              {/* Row 1: Logo, Role Badge & Mobile Logout Button */}
+              <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    onClick={handleLogoutToGateway}
+                    className="cursor-pointer shrink-0"
+                    title="Kembali ke Portal PanenHub"
+                  >
+                    <PanenHubLogo size="md" />
+                  </div>
+                  <div className="hidden sm:block h-5 w-px bg-[#e5e7e9]" />
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ebf5e9] text-[#03ac0e] text-[11px] font-semibold border border-[#03ac0e]/20 shrink-0">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Mitra Produsen</span>
+                  </span>
                 </div>
-                <div className="hidden sm:block h-5 w-px bg-[#e5e7e9]" />
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#ebf5e9] text-[#03ac0e] text-xs font-semibold border border-[#03ac0e]/20">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Mitra Produsen Resmi
-                </span>
+
+                <div className="flex items-center gap-2 sm:hidden">
+                  <button
+                    onClick={handleLogoutToGateway}
+                    className="px-2.5 py-1 rounded-lg border border-slate-200 text-[#6d7588] text-xs font-medium flex items-center gap-1 transition hover:bg-slate-50"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Ganti</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Center: Clean Segmented Persona Switch */}
-              <div className="flex items-center p-1 bg-[#f3f4f5] rounded-lg border border-[#e5e7e9] text-xs self-start sm:self-center">
+              {/* Persona Segmented Switch (Clean 1-line on mobile) */}
+              <div className="flex items-center p-1 bg-[#f3f4f5] rounded-xl border border-[#e5e7e9] text-xs w-full sm:w-auto">
                 <button
                   onClick={() => setProducerType('petani')}
-                  className={`px-3 py-1.5 rounded-md transition cursor-pointer outline-none flex items-center gap-1.5 font-medium ${
+                  className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg transition cursor-pointer outline-none flex items-center justify-center gap-1.5 whitespace-nowrap ${
                     producerType === 'petani'
-                      ? 'bg-white text-[#03ac0e] shadow-2xs font-semibold'
-                      : 'text-[#6d7588] hover:text-[#212121]'
+                      ? 'bg-white text-[#03ac0e] shadow-2xs font-bold'
+                      : 'text-[#6d7588] hover:text-[#212121] font-medium'
                   }`}
                 >
                   <Sprout className="w-3.5 h-3.5" />
-                  <span>Petani: Pak Sugeng (Batu)</span>
+                  <span>Petani Kebun</span>
                 </button>
                 <button
                   onClick={() => setProducerType('nelayan')}
-                  className={`px-3 py-1.5 rounded-md transition cursor-pointer outline-none flex items-center gap-1.5 font-medium ${
+                  className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg transition cursor-pointer outline-none flex items-center justify-center gap-1.5 whitespace-nowrap ${
                     producerType === 'nelayan'
-                      ? 'bg-white text-[#03ac0e] shadow-2xs font-semibold'
-                      : 'text-[#6d7588] hover:text-[#212121]'
+                      ? 'bg-white text-[#03ac0e] shadow-2xs font-bold'
+                      : 'text-[#6d7588] hover:text-[#212121] font-medium'
                   }`}
                 >
                   <Fish className="w-3.5 h-3.5" />
-                  <span>Nelayan: Pak H. Slamet (Muncar)</span>
+                  <span>Nelayan Laut</span>
                 </button>
               </div>
 
-              {/* Right: Live Telemetry */}
-              <div className="flex items-center gap-2.5 self-end sm:self-center">
-                <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-xs text-blue-700 font-medium">
+              {/* Desktop Actions */}
+              <div className="hidden sm:flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-700 font-medium">
                   <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span>{producerType === 'petani' ? '❄️ Cold Pod Batu: 2.4°C' : '❄️ Ice Pod Muncar: 0.8°C'}</span>
+                  <span>{producerType === 'petani' ? '❄️ Cold Pod: 2.4°C' : '❄️ Ice Pod: 0.8°C'}</span>
                 </div>
+                <button
+                  onClick={handleLogoutToGateway}
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[#6d7588] hover:text-[#212121] hover:bg-slate-50 text-xs font-medium transition flex items-center gap-1.5 outline-none cursor-pointer"
+                  title="Ganti Peran Portal"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Ganti Peran</span>
+                </button>
               </div>
 
             </div>
@@ -1259,41 +1303,45 @@ export default function PanenHubTokopediaApp() {
       {/* ── 3. MITRA WARUNG MODE HEADER ── */}
       {activePov === 'warung' && (
         <header className="sticky top-0 z-40 bg-white border-b border-[#e5e7e9] shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
-          <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-              <div className="flex items-center gap-4">
+          <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+            <div className="flex items-center justify-between gap-3">
+              {/* Left: Logo & Identity */}
+              <div className="flex items-center gap-2.5 sm:gap-3.5">
                 <div
                   onClick={handleLogoutToGateway}
-                  className="cursor-pointer"
+                  className="cursor-pointer shrink-0"
                   title="Kembali ke Beranda PanenHub"
                 >
                   <PanenHubLogo size="md" />
                 </div>
-                <div className="h-6 w-px bg-slate-200 hidden sm:block" />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-[#212121]">Kasir & Drop-Point Mitra Warung</span>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] border border-emerald-300">
-                      🏪 Titik Ambil Bebas Ongkir Tetangga
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-[#6d7588]">
-                    Warung Bu Siti (#042) • Tebet Timur, Jakarta Selatan
-                  </p>
+                <div className="h-5 w-px bg-slate-200" />
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-xs sm:text-sm text-[#212121]">
+                    Warung Bu Siti
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold border border-emerald-300 shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#03ac0e] animate-pulse"></span>
+                    <span>Drop-Point Resmi</span>
+                  </span>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-[#03ac0e]" />
-                  <span className="text-[#6d7588]">Saldo Komisi Penitipan:</span>
-                  <strong className="text-[#03ac0e] font-semibold">Rp {warungBalance.toLocaleString('id-ID')}</strong>
+              {/* Right: Balance & Exit */}
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-xs">
+                  <Wallet className="w-3.5 h-3.5 text-[#03ac0e]" />
+                  <span className="text-[#6d7588]">Komisi:</span>
+                  <strong className="text-[#03ac0e]">Rp {warungBalance.toLocaleString('id-ID')}</strong>
                 </div>
 
-                <div className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs text-[#212121] flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  <span>Rak Paket: <strong>{orders.filter(o => o.status === 'ready').length} Menunggu</strong></span>
-                </div>
+                <button
+                  onClick={handleLogoutToGateway}
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[#6d7588] hover:text-[#212121] hover:bg-slate-50 text-xs font-medium transition flex items-center gap-1.5 outline-none cursor-pointer"
+                  title="Ganti Peran Portal"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Ganti Peran</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1794,157 +1842,129 @@ export default function PanenHubTokopediaApp() {
     {activePov === 'producer' && (
       <div className="space-y-4 sm:space-y-5 animate-fadeIn">
         
-        {/* Tokopedia Seller Store Overview Card */}
-        <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 border ${
-              producerType === 'petani' 
-                ? 'bg-[#ebf5e9] text-[#03ac0e] border-[#03ac0e]/20' 
-                : 'bg-blue-50 text-blue-600 border-blue-200'
-            }`}>
-              {producerType === 'petani' ? '🌱' : '🐟'}
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-[#212121]">
-                  {producerType === 'petani' ? 'Pak Sugeng Widodo' : 'Pak H. Slamet Riyadi'}
-                </h1>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] flex items-center gap-1 border border-emerald-300">
-                  <CheckCircle2 className="w-3 h-3" /> Mitra Produsen Terverifikasi
-                </span>
-                <span className="text-[10px] text-[#6d7588] bg-slate-100 px-2 py-0.5 rounded-md hidden sm:inline font-mono">
-                  {producerType === 'petani' ? 'ID: PET-BATU-088' : 'ID: NEL-MUNCAR-014'}
-                </span>
+        {/* Tokopedia Seller Profile Card */}
+        <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 border ${
+                producerType === 'petani' 
+                  ? 'bg-[#ebf5e9] text-[#03ac0e] border-[#03ac0e]/20' 
+                  : 'bg-blue-50 text-blue-600 border-blue-200'
+              }`}>
+                {producerType === 'petani' ? '🌱' : '🐟'}
               </div>
-              <p className="text-xs text-[#6d7588]">
-                {producerType === 'petani'
-                  ? 'Ketua Kelompok Tani Makmur Sentosa • Bumiaji, Kota Batu (1.100 mdpl)'
-                  : 'Ketua KUB Mina Barokah Pesisir • Pelabuhan Muncar, Banyuwangi'}
-              </p>
-              <div className="flex flex-wrap items-center gap-2 pt-0.5 text-[11px] text-[#6d7588]">
-                <span className="flex items-center gap-1 bg-[#f3f4f5] px-2 py-0.5 rounded">
-                  ❄️ Hub: <strong className="text-[#212121]">{producerType === 'petani' ? 'PanenPod Solar #01 (2.4°C)' : 'Slurry IcePod Dermaga #02 (0.8°C)'}</strong>
-                </span>
-                <span className="flex items-center gap-1 bg-[#ebf5e9] text-[#03ac0e] px-2 py-0.5 rounded font-medium">
-                  🛡️ Proteksi Anti-Ijon & Fair Trade
-                </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-base sm:text-lg font-bold text-[#212121] leading-tight">
+                    {producerType === 'petani' ? 'Pak Sugeng Widodo' : 'Pak H. Slamet Riyadi'}
+                  </h1>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] inline-flex items-center gap-1 border border-emerald-300">
+                    <CheckCircle2 className="w-3 h-3" /> Terverifikasi
+                  </span>
+                </div>
+                <p className="text-xs text-[#6d7588] mt-0.5 truncate">
+                  {producerType === 'petani'
+                    ? 'Kelompok Tani Makmur • Bumiaji, Batu'
+                    : 'KUB Mina Barokah • Pesisir Muncar, Banyuwangi'}
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2.5 shrink-0 self-start md:self-center">
-            <button
-              onClick={() => setIsDepositModalOpen(true)}
-              className="px-4 py-2.5 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer outline-none"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{producerType === 'petani' ? 'Setor Hasil Panen' : 'Setor Hasil Tangkapan'}</span>
-            </button>
-            <button
-              onClick={handleFarmerWithdraw}
-              className="px-4 py-2.5 rounded-lg bg-white border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer outline-none"
-            >
-              <Wallet className="w-4 h-4" />
-              <span>Tarik Saldo T+0</span>
-            </button>
+            <div className="flex items-center gap-2 pt-1 sm:pt-0">
+              <button
+                onClick={() => setIsDepositModalOpen(true)}
+                className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer outline-none"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Setor Panen</span>
+              </button>
+              <button
+                onClick={handleFarmerWithdraw}
+                className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-white border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer outline-none"
+              >
+                <Wallet className="w-3.5 h-3.5" />
+                <span>Tarik Saldo</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Tokopedia Seller Metrics: Penting Hari Ini (Ringkasan Operasional) */}
+        {/* Ringkasan Operasional Hari Ini */}
         <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-[#f3f4f5]">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-[#03ac0e]" />
-              <h2 className="text-xs sm:text-sm font-bold text-[#212121]">Penting Hari Ini (Ringkasan Operasional)</h2>
+              <h2 className="text-xs sm:text-sm font-bold text-[#212121]">Ringkasan Operasional Hari Ini</h2>
             </div>
-            <span className="text-[11px] text-[#6d7588] hidden sm:inline">Tersinkronisasi Sensor Timbangan IoT & Cold Pod</span>
+            <span className="text-[11px] text-[#6d7588] hidden sm:inline">Sensor Timbangan & Cold Chain Aktif</span>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2 border-t border-[#f3f4f5]">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-1">
             {/* Col 1 */}
-            <div className="space-y-1">
-              <span className="text-xs text-[#6d7588] block">Setoran Masuk Hari Ini</span>
-              <span className="text-xl sm:text-2xl font-bold text-[#212121] block">
+            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+              <span className="text-[11px] text-[#6d7588] block">Setoran Hari Ini</span>
+              <span className="text-xl font-bold text-[#212121] block">
                 {producerType === 'petani' ? '120 Kg' : '95 Kg'}
               </span>
-              <span className="text-[11px] text-[#03ac0e] font-medium block">
-                {producerType === 'petani' ? '✓ 100% Lolos Sensor QC Grade A' : '✓ 100% Standar Ekspor Sashimi'}
-              </span>
-              <span className="text-[10px] text-[#8d96aa] block">
-                {producerType === 'petani' ? 'Kapasitas Cold Pod: 84% terpakai' : 'Kapasitas IcePod: 76% terpakai'}
+              <span className="text-[10px] text-[#03ac0e] font-semibold block">
+                {producerType === 'petani' ? '✓ Lolos Sensor QC Grade A' : '✓ Standar Ekspor Sashimi'}
               </span>
             </div>
 
             {/* Col 2 */}
-            <div className="space-y-1">
-              <span className="text-xs text-[#6d7588] block">Saldo Dompet T+0 (Siap Tarik)</span>
-              <span className="text-xl sm:text-2xl font-bold text-[#03ac0e] block">
+            <div className="p-3 rounded-lg bg-[#ebf5e9]/70 border border-[#03ac0e]/20 space-y-1">
+              <span className="text-[11px] text-[#6d7588] block">Saldo Siap Tarik (T+0)</span>
+              <span className="text-xl font-bold text-[#03ac0e] block">
                 Rp {farmerWalletBalance.toLocaleString('id-ID')}
-              </span>
-              <span className="text-[11px] text-[#6d7588] block">
-                {producerType === 'petani' ? 'BRI (...7812) a.n Sugeng' : 'BNI (...4491) a.n H. Slamet'}
               </span>
               <button
                 onClick={handleFarmerWithdraw}
-                className="text-[11px] text-[#03ac0e] font-semibold hover:underline block cursor-pointer outline-none"
+                className="text-[10px] text-[#03ac0e] font-bold hover:underline block cursor-pointer outline-none"
               >
-                Tarik Saldo Seketika →
+                Tarik ke Rekening →
               </button>
             </div>
 
             {/* Col 3 */}
-            <div className="space-y-1">
-              <span className="text-xs text-[#6d7588] block">Margin vs Sistem Ijon</span>
-              <span className="text-xl sm:text-2xl font-bold text-[#212121] block">
-                {producerType === 'petani' ? '+53.1% Lebih Tinggi' : '+52.0% Lebih Tinggi'}
+            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+              <span className="text-[11px] text-[#6d7588] block">
+                {producerType === 'petani' ? 'Suhu Cold Pod' : 'Suhu Slurry Ice'}
               </span>
-              <span className="text-[11px] text-[#03ac0e] font-medium block">
-                {producerType === 'petani' ? '0% Potongan Susut Sepihak' : '0% Potongan Es Sepihak'}
+              <span className="text-xl font-bold text-[#212121] block">
+                {producerType === 'petani' ? '2.4°C' : '0.8°C'}
               </span>
-              <span className="text-[10px] text-[#8d96aa] block">
-                {producerType === 'petani' ? '🛡️ Timbangan Digital IoT Akurat' : '🛡️ Timbangan Slurry Digital IoT'}
+              <span className="text-[10px] text-[#03ac0e] font-semibold block">
+                {producerType === 'petani' ? 'Optimal Bertenaga Surya' : 'Super Chilled Dermaga'}
               </span>
             </div>
 
             {/* Col 4 */}
-            <div className="space-y-1">
-              <span className="text-xs text-[#6d7588] block">
-                {producerType === 'petani' ? 'Telemetri Cold Pod Desa' : 'Telemetri IcePod Dermaga'}
+            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+              <span className="text-[11px] text-[#6d7588] block">Kapasitas Pod</span>
+              <span className="text-xl font-bold text-[#212121] block">
+                {producerType === 'petani' ? '84%' : '76%'}
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xl sm:text-2xl font-bold text-[#212121]">
-                  {producerType === 'petani' ? '2.4°C' : '0.8°C'}
-                </span>
-                <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-emerald-100 text-[#03ac0e]">
-                  {producerType === 'petani' ? 'Optimal (0–4°C)' : 'Super Chilled'}
-                </span>
-              </div>
-              <span className="text-[11px] text-[#6d7588] block">
-                {producerType === 'petani' ? 'Kelembaban: 92% RH • Solar PV: 100%' : 'Salinitas Slurry: 3.2% • Chiller Aktif'}
-              </span>
-              <span className="text-[10px] text-[#03ac0e] font-medium block">
-                {producerType === 'petani' ? 'Food Waste: 0.4% (vs Tengkulak 35%)' : 'Spoilage Rate: 0.1% (vs Tengkulak 40%)'}
+              <span className="text-[10px] text-[#6d7588] block">
+                {producerType === 'petani' ? 'Slot sisa 35 kg' : 'Slot sisa 45 kg'}
               </span>
             </div>
           </div>
         </div>
 
         {/* Demand Quota Section (Early Morning Batching from Consumer Orders) */}
-        <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4">
+        <div id="kuota-section" className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#e5e7e9]">
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm sm:text-base font-bold text-[#212121]">
-                  🎯 Alokasi Kuota Permintaan Masuk (Batching Order)
+                  🎯 Alokasi Kuota Permintaan Masuk
                 </h2>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] text-[10px] font-bold">
-                  Sinkron Konsumen
+                  Sinkron Pesanan
                 </span>
               </div>
               <p className="text-xs text-[#6d7588] mt-0.5">
-                {producerType === 'petani'
-                  ? 'Pesanan terkumpul semalam dari konsumen kota sebelum jam 21:00. Petani memanen sesuai kuota ini sehingga nol risiko gagal jual.'
-                  : 'Pesanan hotel, resto, dan konsumen kota terdata sebelum jam 21:00. Nelayan melaut dan menyetor sesuai kuota pasti ini.'}
+                Kebutuhan panen dari konsumen yang siap Anda setor langsung hari ini.
               </p>
             </div>
 
@@ -1952,7 +1972,7 @@ export default function PanenHubTokopediaApp() {
               onClick={() => setIsDepositModalOpen(true)}
               className="px-3.5 py-1.5 rounded-lg border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition self-start sm:self-center cursor-pointer outline-none"
             >
-              + Setor Komoditas Sekarang
+              + Setor Komoditas
             </button>
           </div>
 
@@ -2380,100 +2400,106 @@ export default function PanenHubTokopediaApp() {
       <div className="space-y-4 sm:space-y-5 animate-fadeIn">
         
         {/* Tokopedia Mitra Store Overview Card */}
-        <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center text-2xl shrink-0 border border-slate-200">
-              🏪
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-[#212121]">
-                  Warung Bu Siti
-                </h1>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] flex items-center gap-1 border border-emerald-300">
-                  <CheckCircle2 className="w-3 h-3" /> Mitra Drop-Point Resmi #042
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-white font-medium">
-                  Aktif Buka
-                </span>
+        <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-[#ebf5e9] text-[#03ac0e] flex items-center justify-center text-xl shrink-0 border border-[#03ac0e]/20">
+                🏪
               </div>
-              <p className="text-xs text-[#6d7588]">
-                Jl. Tebet Timur Dalam Raya No. 14, Tebet, Jakarta Selatan • Bebas Ongkir Titik Ambil Warga
-              </p>
-              <div className="flex flex-wrap items-center gap-2 pt-0.5 text-[11px] text-[#6d7588]">
-                <span className="flex items-center gap-1 bg-[#f3f4f5] px-2 py-0.5 rounded">
-                  📦 Drop Cold Van: <strong className="text-[#212121]">06:45 WIB Setiap Pagi</strong>
-                </span>
-                <span className="flex items-center gap-1 bg-[#ebf5e9] text-[#03ac0e] px-2 py-0.5 rounded font-medium">
-                  💵 Komisi Tunai: Rp 2.000 / Paket Selesai
-                </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-base sm:text-lg font-bold text-[#212121] leading-tight">
+                    Warung Bu Siti
+                  </h1>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] inline-flex items-center gap-1 border border-emerald-300">
+                    <CheckCircle2 className="w-3 h-3" /> Mitra Resmi #042
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-white font-medium">
+                    Aktif
+                  </span>
+                </div>
+                <p className="text-xs text-[#6d7588] mt-0.5 truncate">
+                  Tebet Timur Raya No. 14, Jaksel • Cold Van Drop 06:45 WIB
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="p-3.5 rounded-xl bg-[#ebf5e9] border border-[#03ac0e]/30 text-center sm:text-right space-y-1 shrink-0 self-start md:self-center">
-            <span className="text-[11px] text-[#6d7588] font-medium block">Total Komisi Penitipan Anda</span>
-            <span className="text-2xl font-bold text-[#03ac0e] block tracking-tight">
-              Rp {warungBalance.toLocaleString('id-ID')}
-            </span>
-            <span className="text-[10px] text-[#03ac0e] font-medium block">
-              +Rp 2.000 tiap paket yang diambil
-            </span>
+            <div className="flex items-center gap-2 pt-1 sm:pt-0">
+              <button
+                onClick={() => {
+                  const pinEl = document.getElementById('pin-input-section');
+                  pinEl?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer outline-none"
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>Validasi PIN</span>
+              </button>
+              <button
+                onClick={() => showToast(`💰 Saldo komisi siap cair: Rp ${warungBalance.toLocaleString('id-ID')}`)}
+                className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-white border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer outline-none"
+              >
+                <Wallet className="w-3.5 h-3.5" />
+                <span>Tarik Komisi</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* 4 Stat Columns Tokopedia Mitra */}
         <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-[#f3f4f5]">
             <div className="flex items-center gap-2">
               <Store className="w-4 h-4 text-[#03ac0e]" />
-              <h2 className="text-xs sm:text-sm font-bold text-[#212121]">Status Operasional Drop-Point Hari Ini</h2>
+              <h2 className="text-xs sm:text-sm font-bold text-[#212121]">Status Operasional Drop-Point</h2>
             </div>
-            <span className="text-[11px] text-[#6d7588] hidden sm:inline">Live Status Rak Warung</span>
+            <span className="text-[11px] text-[#6d7588] hidden sm:inline">Update Real-time</span>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2 border-t border-[#f3f4f5]">
-            <div className="space-y-1">
-              <span className="text-xs text-[#6d7588] block">Paket Siap di Rak</span>
-              <span className="text-xl sm:text-2xl font-bold text-[#212121] block">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-1">
+            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+              <span className="text-[11px] text-[#6d7588] block">Paket Siap di Rak</span>
+              <span className="text-xl font-bold text-[#212121] block">
                 {orders.filter(o => o.status === 'ready').length} Paket
               </span>
-              <span className="text-[11px] text-[#03ac0e] font-medium block">Tersimpan rapi di rak dingin</span>
+              <span className="text-[10px] text-[#03ac0e] font-semibold block">Menunggu diambil warga</span>
             </div>
 
-            <div className="space-y-1">
-              <span className="text-xs text-[#6d7588] block">Paket Selesai Diambil</span>
-              <span className="text-xl sm:text-2xl font-bold text-[#03ac0e] block">
+            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+              <span className="text-[11px] text-[#6d7588] block">Paket Selesai</span>
+              <span className="text-xl font-bold text-[#03ac0e] block">
                 {orders.filter(o => o.status === 'collected').length} Paket
               </span>
-              <span className="text-[11px] text-[#6d7588] block">Hari ini oleh warga sekitar</span>
+              <span className="text-[10px] text-[#6d7588] block">Hari ini oleh warga sekitar</span>
             </div>
 
-            <div className="space-y-1">
-              <span className="text-xs text-[#6d7588] block">Ekstra Belanja Warung</span>
-              <span className="text-xl sm:text-2xl font-bold text-blue-600 block">+42% Belanja</span>
-              <span className="text-[11px] text-[#6d7588] block">Warga ikut beli minyak, beras, bumbu</span>
+            <div className="p-3 rounded-lg bg-[#ebf5e9]/70 border border-[#03ac0e]/20 space-y-1">
+              <span className="text-[11px] text-[#6d7588] block">Saldo Komisi</span>
+              <span className="text-xl font-bold text-[#03ac0e] block">
+                Rp {warungBalance.toLocaleString('id-ID')}
+              </span>
+              <span className="text-[10px] text-[#03ac0e] font-semibold block">+Rp 2.000 / paket selesai</span>
             </div>
 
-            <div className="space-y-1">
-              <span className="text-xs text-[#6d7588] block">Rating Kepuasan Warga</span>
-              <span className="text-xl sm:text-2xl font-bold text-amber-500 block">4.9 / 5.0 ⭐</span>
-              <span className="text-[11px] text-[#6d7588] block">Pelayanan ramah & tepat waktu</span>
+            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+              <span className="text-[11px] text-[#6d7588] block">Rating Pelayanan</span>
+              <span className="text-xl font-bold text-amber-500 block">4.9 / 5.0 ⭐</span>
+              <span className="text-[10px] text-[#6d7588] block">Sangat ramah & tepat waktu</span>
             </div>
           </div>
         </div>
 
-        {/* PIN Validator Cashier Terminal (Tokopedia POS Standard) */}
-        <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4">
+        {/* PIN Validator Cashier Terminal */}
+        <div id="pin-input-section" className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4">
           <div className="space-y-1 pb-3 border-b border-[#e5e7e9]">
             <div className="flex items-center gap-2">
               <QrCode className="w-4 h-4 text-[#03ac0e]" />
               <h3 className="font-bold text-sm sm:text-base text-[#212121]">
-                Mesin Kasir: Validasi PIN Pengambilan Konsumen
+                Validasi PIN Pengambilan Konsumen
               </h3>
             </div>
             <p className="text-xs text-[#6d7588]">
-              Saat pelanggan tiba di warung untuk mengambil sayur/ikan, minta 4 digit PIN yang tertera pada tiket aplikasi PanenHub mereka.
+              Masukkan 4 digit PIN yang tertera di tiket aplikasi PanenHub konsumen saat mengambil belanjaan.
             </p>
           </div>
 
@@ -2484,7 +2510,7 @@ export default function PanenHubTokopediaApp() {
                 maxLength={4}
                 value={inputWarungPin}
                 onChange={(e) => setInputWarungPin(e.target.value)}
-                placeholder="PIN 4 Digit"
+                placeholder="4 Digit PIN"
                 className="w-full text-center tracking-widest text-2xl font-mono font-bold px-4 py-2 rounded-lg border border-[#e5e7e9] focus:border-[#03ac0e] focus:outline-none transition bg-white"
               />
             </div>
@@ -2494,7 +2520,7 @@ export default function PanenHubTokopediaApp() {
               className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white font-semibold text-xs transition shadow-2xs cursor-pointer outline-none flex items-center justify-center gap-2"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Validasi PIN & Serahkan Paket (+Rp 2.000)</span>
+              <span>Verifikasi & Serahkan (+Rp 2.000)</span>
             </button>
 
             {/* Quick Helper Button to test auto-fill */}
@@ -2504,9 +2530,9 @@ export default function PanenHubTokopediaApp() {
                   const samplePin = orders.find(o => o.status === 'ready')?.pin || '';
                   setInputWarungPin(samplePin);
                 }}
-                className="w-full sm:w-auto px-3.5 py-2.5 rounded-lg bg-[#f3f4f5] hover:bg-slate-200 text-[#6d7588] text-xs font-medium transition cursor-pointer outline-none"
+                className="w-full sm:w-auto px-3.5 py-2.5 rounded-lg bg-[#f3f4f5] hover:bg-slate-200 text-[#6d7588] text-xs font-medium transition cursor-pointer outline-none whitespace-nowrap"
               >
-                💡 Test Auto-fill PIN: <strong>{orders.find(o => o.status === 'ready')?.pin}</strong>
+                💡 Test PIN: <strong>{orders.find(o => o.status === 'ready')?.pin}</strong>
               </button>
             )}
           </div>
@@ -2524,16 +2550,16 @@ export default function PanenHubTokopediaApp() {
         </div>
 
         {/* Daftar Rak Paket yang Sedang Ada di Warung */}
-        <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-3">
+        <div id="rak-paket-section" className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-[#e5e7e9]">
             <div>
               <h3 className="font-semibold text-xs sm:text-sm text-[#212121]">
-                Daftar Rak Paket Pesanan Konsumen di Warung
+                Daftar Paket di Rak Warung
               </h3>
-              <p className="text-[11px] text-[#6d7588]">Paket tiba setiap 06:45 WIB pagi melalui armada Cold Van PanenHub</p>
+              <p className="text-[11px] text-[#6d7588]">Tersimpan di rak dingin, siap diserahkan ke pembeli</p>
             </div>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#f3f4f5] text-[#212121] font-medium border border-[#e5e7e9]">
-              Total {orders.length} Paket
+              {orders.length} Paket
             </span>
           </div>
 
@@ -2588,33 +2614,6 @@ export default function PanenHubTokopediaApp() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* 3 Pilar Kemitraan Mitra Warung */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
-          <div className="p-4 rounded-xl bg-white border border-[#e5e7e9] space-y-1.5 shadow-2xs">
-            <span className="text-xl">📦</span>
-            <h4 className="font-bold text-xs text-[#212121]">Nol Modal & Risiko Basi</h4>
-            <p className="text-xs text-[#6d7588] leading-relaxed">
-              Warung tidak perlu keluar modal membeli stok sayur/ikan. Semua barang sudah dibeli konsumen secara online.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-white border border-[#e5e7e9] space-y-1.5 shadow-2xs">
-            <span className="text-xl">💰</span>
-            <h4 className="font-bold text-xs text-[#212121]">Komisi Tunai Pasti</h4>
-            <p className="text-xs text-[#6d7588] leading-relaxed">
-              Dapatkan Rp 2.000 untuk setiap paket yang diserahkan. Tambahan penghasilan tunai langsung masuk ke saldo.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-white border border-[#e5e7e9] space-y-1.5 shadow-2xs">
-            <span className="text-xl">🛒</span>
-            <h4 className="font-bold text-xs text-[#212121]">Trafik Pembeli Baru</h4>
-            <p className="text-xs text-[#6d7588] leading-relaxed">
-              Tetangga sekitar yang datang mengambil sayur akan otomatis berbelanja minyak, telur, dan bumbu di warung Anda.
-            </p>
           </div>
         </div>
 
@@ -3365,23 +3364,30 @@ export default function PanenHubTokopediaApp() {
           {activePov === 'producer' && (
             <>
               <button
-                onClick={() => setProducerType('petani')}
-                className={`flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
-                  producerType === 'petani' ? 'text-[#03ac0e] font-semibold' : 'hover:text-[#03ac0e]'
-                }`}
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex flex-col items-center gap-0.5 p-1 text-[#03ac0e] font-semibold transition outline-none cursor-pointer"
               >
-                <Sprout className="w-4 h-4" />
-                <span>Petani</span>
+                <TrendingUp className="w-4 h-4" />
+                <span>Ringkasan</span>
               </button>
 
               <button
-                onClick={() => setProducerType('nelayan')}
-                className={`flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
-                  producerType === 'nelayan' ? 'text-[#03ac0e] font-semibold' : 'hover:text-[#03ac0e]'
-                }`}
+                onClick={() => {
+                  const el = document.getElementById('kuota-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#03ac0e]"
               >
-                <Fish className="w-4 h-4" />
-                <span>Nelayan</span>
+                <Layers className="w-4 h-4" />
+                <span>Kuota</span>
+              </button>
+
+              <button
+                onClick={() => setIsDepositModalOpen(true)}
+                className="flex flex-col items-center gap-0.5 p-1 text-[#03ac0e] font-bold transition outline-none cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Setor</span>
               </button>
 
               <button
@@ -3393,11 +3399,11 @@ export default function PanenHubTokopediaApp() {
               </button>
 
               <button
-                onClick={() => setIsDepositModalOpen(true)}
-                className="flex flex-col items-center gap-0.5 p-1 text-[#03ac0e] font-bold transition outline-none cursor-pointer"
+                onClick={handleLogoutToGateway}
+                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#212121]"
               >
-                <Plus className="w-4 h-4" />
-                <span>+ Setor</span>
+                <LogOut className="w-4 h-4 text-slate-500" />
+                <span>Ganti</span>
               </button>
             </>
           )}
@@ -3414,14 +3420,24 @@ export default function PanenHubTokopediaApp() {
 
               <button
                 onClick={() => {
-                  const samplePin = orders.find(o => o.status === 'ready')?.pin || '';
-                  setInputWarungPin(samplePin);
-                  showToast(`💡 Auto-fill PIN: ${samplePin}`);
+                  const el = document.getElementById('pin-input-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#03ac0e]"
               >
                 <QrCode className="w-4 h-4" />
-                <span>Validasi PIN</span>
+                <span>Validasi</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  const el = document.getElementById('rak-paket-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#03ac0e]"
+              >
+                <Layers className="w-4 h-4" />
+                <span>Rak Paket</span>
               </button>
 
               <button
@@ -3430,6 +3446,14 @@ export default function PanenHubTokopediaApp() {
               >
                 <Wallet className="w-4 h-4" />
                 <span>Komisi</span>
+              </button>
+
+              <button
+                onClick={handleLogoutToGateway}
+                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#212121]"
+              >
+                <LogOut className="w-4 h-4 text-slate-500" />
+                <span>Ganti</span>
               </button>
             </>
           )}
