@@ -40,8 +40,8 @@ import confetti from 'canvas-confetti';
 
 // --- CUSTOM MODERN MINIMALIST LOGO FOR PANENHUB ---
 function PanenHubLogo({ size = 'md', showText = true }: { size?: 'sm' | 'md' | 'lg'; showText?: boolean }) {
-  const iconDim = size === 'sm' ? 'w-7 h-7' : size === 'lg' ? 'w-10 h-10' : 'w-8 h-8';
-  const textDim = size === 'sm' ? 'text-lg' : size === 'lg' ? 'text-2xl' : 'text-xl';
+  const iconDim = size === 'sm' ? 'w-6 h-6' : size === 'lg' ? 'w-10 h-10' : 'w-7 h-7 sm:w-8 sm:h-8';
+  const textDim = size === 'sm' ? 'text-base' : size === 'lg' ? 'text-2xl' : 'text-base sm:text-xl';
 
   return (
     <div className="flex items-center gap-2 select-none group cursor-pointer">
@@ -108,15 +108,16 @@ interface Product {
 }
 
 const CATEGORIES = [
-  { id: 'for_you', label: 'Semua Produk', icon: '✨', count: '12 Produk' },
+  { id: 'for_you', label: 'Semua Produk', icon: '✨', count: '26 Produk' },
   { id: 'flash_sale', label: 'Panen Hari Ini', icon: '🔥', count: 'Flash Promo' },
-  { id: 'sayur', label: 'Sayuran Segar', icon: '🥬', count: '4 Produk' },
+  { id: 'sayur', label: 'Sayuran Segar', icon: '🥬', count: '10 Produk' },
+  { id: 'seafood', label: 'Hasil Laut & Ikan', icon: '🐟', count: '7 Produk' },
+  { id: 'buah', label: 'Buah & Tomat', icon: '🍎', count: '6 Produk' },
   { id: 'bumbu', label: 'Bumbu Dapur', icon: '🌶️', count: '3 Produk' },
-  { id: 'seafood', label: 'Hasil Laut & Ikan', icon: '🐟', count: '3 Produk' },
-  { id: 'buah', label: 'Buah & Tomat', icon: '🍅', count: '2 Produk' },
 ];
 
 const PRODUCTS: Product[] = [
+  // --- BUMBU DAPUR (3) ---
   {
     id: 'p1',
     name: 'Cabai Rawit Merah Super Segar Petik Subuh',
@@ -135,107 +136,7 @@ const PRODUCTS: Product[] = [
     temperature: '2.4°C',
     rating: 4.9,
     soldCount: '1.2rb+',
-    description: 'Cabai rawit merah varietas Ori 212 kualitas ekspor. Dipetik saat subuh dan langsung disimpan dalam PanenPod 2.4°C agar tetap segar dan tidak mudah busuk.'
-  },
-  {
-    id: 'p2',
-    name: 'Tomat Beef Hidroponik Segar Pilihan Restoran',
-    category: 'buah',
-    categoryLabel: 'Buah & Tomat',
-    weightLabel: '500 gr',
-    price: 8500,
-    originalPrice: 13000,
-    discountPercent: 35,
-    image: '/products/tomat.jpg',
-    city: 'Kab. Malang',
-    farmer: 'Ibu Rahayu Lestari',
-    harvestTime: 'Pagi 06:15 WIB',
-    grade: 'Grade A',
-    batchId: 'PNH-2026-MLG-TMT04',
-    temperature: '2.8°C',
-    rating: 4.9,
-    soldCount: '850+',
-    description: 'Tomat berdaging tebal, kadar air padat, kaya likopen dan vitamin C. Ditanam secara hidroponik tanpa pestisida kimia sintetis.'
-  },
-  {
-    id: 'p3',
-    name: 'Fillet Ikan Tuna Sirip Kuning Yellowfin Sashimi',
-    category: 'seafood',
-    categoryLabel: 'Hasil Laut & Ikan',
-    weightLabel: '300 gr',
-    price: 29000,
-    originalPrice: 42000,
-    discountPercent: 31,
-    image: '/products/tuna.jpg',
-    city: 'Banyuwangi',
-    farmer: 'Pak H. Slamet Riyadi',
-    harvestTime: 'Subuh 04:30 WIB',
-    grade: 'Grade A',
-    batchId: 'PNH-2026-BWI-TNA09',
-    temperature: '-18.5°C',
-    rating: 5.0,
-    soldCount: '420+',
-    description: 'Tuna Yellowfin hasil tangkapan pancing ramah lingkungan nelayan Muncar. Dibekukan seketika (blast-freezing) -18°C untuk mempertahankan tekstur sashimi.'
-  },
-  {
-    id: 'p4',
-    name: 'Selada Romaine Crispy Dataran Tinggi Bromo',
-    category: 'sayur',
-    categoryLabel: 'Sayuran Hijau',
-    weightLabel: '250 gr',
-    price: 7000,
-    originalPrice: 11000,
-    discountPercent: 36,
-    image: '/products/selada.jpg',
-    city: 'Probolinggo',
-    farmer: 'Kang Joko Susilo',
-    harvestTime: 'Subuh 05:00 WIB',
-    grade: 'Grade A',
-    batchId: 'PNH-2026-PBG-SLD02',
-    temperature: '2.0°C',
-    rating: 4.8,
-    soldCount: '630+',
-    description: 'Selada Romaine renyah dataran tinggi lereng Bromo (1.800 mdpl). Sangat segar untuk salad dan lalapan sehat tanpa pengawet.'
-  },
-  {
-    id: 'p5',
-    name: 'Udang Vaname Fresh Size 30 Tambak Pesisir',
-    category: 'seafood',
-    categoryLabel: 'Hasil Laut & Ikan',
-    weightLabel: '350 gr',
-    price: 32000,
-    originalPrice: 45000,
-    discountPercent: 29,
-    image: '/products/udang.jpg',
-    city: 'Tuban',
-    farmer: 'Pak Darsono Mulyo',
-    harvestTime: 'Subuh 05:15 WIB',
-    grade: 'Grade A',
-    batchId: 'PNH-2026-TBN-UDG07',
-    temperature: '-18.2°C',
-    rating: 4.9,
-    soldCount: '310+',
-    description: 'Udang Vaname tambak bioflok modern air payau. Daging kenyal manis alami, kepala dan kulit utuh terjaga dalam cold chain.'
-  },
-  {
-    id: 'p6',
-    name: 'Wortel Baby Manis Organik Panen Sore',
-    category: 'sayur',
-    categoryLabel: 'Sayuran Hijau',
-    weightLabel: '500 gr',
-    price: 9000,
-    originalPrice: 13500,
-    discountPercent: 33,
-    image: '/products/wortel.jpg',
-    city: 'Kota Batu',
-    farmer: 'Pak Sugeng Widodo',
-    harvestTime: 'Kemarin Sore',
-    grade: 'Grade A',
-    batchId: 'PNH-2026-BATU-WRT08',
-    temperature: '2.4°C',
-    rating: 4.8,
-    soldCount: '520+',
-    description: 'Wortel baby tanpa serat kasar dengan rasa manis alami. Cocok untuk jus segar, sop sayur, dan makanan pendamping ASI.'
+    description: 'Cabai rawit merah varietas Ori 212 kualitas ekspor. Dipetik saat subuh dan langsung disimpan dalam PanenPod 2.4°C agar tetap segar dan pedas maksimal.'
   },
   {
     id: 'p7',
@@ -258,10 +159,72 @@ const PRODUCTS: Product[] = [
     description: 'Bawang merah varietas Bauji Nganjuk berumbi besar, aroma harum menyengat, kering tuntas sehingga awet disimpan berminggu-minggu.'
   },
   {
+    id: 'p12',
+    name: 'Bawang Putih Tunggal Lanang Herbal Segar',
+    category: 'bumbu',
+    categoryLabel: 'Bumbu Dapur',
+    weightLabel: '250 gr',
+    price: 21000,
+    originalPrice: 29000,
+    discountPercent: 27,
+    image: '/products/bawang_putih.jpg',
+    city: 'Kota Batu',
+    farmer: 'Ibu Siti Munawaroh',
+    harvestTime: 'Kemarin Siang',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-BATU-BWP09',
+    temperature: '20.0°C',
+    rating: 4.9,
+    soldCount: '390+',
+    description: 'Bawang putih lanang tunggal pilihan herbal berkhasiat tinggi untuk kesehatan daya tahan tubuh dan kebugaran keluarga.'
+  },
+
+  // --- SAYURAN SEGAR (10) ---
+  {
+    id: 'p4',
+    name: 'Selada Romaine Crispy Dataran Tinggi Bromo',
+    category: 'sayur',
+    categoryLabel: 'Sayuran Segar',
+    weightLabel: '250 gr',
+    price: 7000,
+    originalPrice: 11000,
+    discountPercent: 36,
+    image: '/products/selada.jpg',
+    city: 'Probolinggo',
+    farmer: 'Kang Joko Susilo',
+    harvestTime: 'Subuh 05:00 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-PBG-SLD02',
+    temperature: '2.0°C',
+    rating: 4.8,
+    soldCount: '630+',
+    description: 'Selada Romaine renyah dataran tinggi lereng Bromo (1.800 mdpl). Sangat segar untuk salad dan lalapan sehat tanpa pengawet.'
+  },
+  {
+    id: 'p6',
+    name: 'Wortel Baby Manis Organik Panen Sore',
+    category: 'sayur',
+    categoryLabel: 'Sayuran Segar',
+    weightLabel: '500 gr',
+    price: 9000,
+    originalPrice: 13500,
+    discountPercent: 33,
+    image: '/products/wortel.jpg',
+    city: 'Kota Batu',
+    farmer: 'Pak Sugeng Widodo',
+    harvestTime: 'Kemarin Sore',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-BATU-WRT08',
+    temperature: '2.4°C',
+    rating: 4.8,
+    soldCount: '520+',
+    description: 'Wortel baby tanpa serat kasar dengan rasa manis alami. Cocok untuk jus segar, sop sayur, dan makanan pendamping ASI.'
+  },
+  {
     id: 'p8',
     name: 'Brokoli Hijau Dataran Tinggi Pujon Bebas Pestisida',
     category: 'sayur',
-    categoryLabel: 'Sayuran Hijau',
+    categoryLabel: 'Sayuran Segar',
     weightLabel: '350 gr',
     price: 12000,
     originalPrice: 17500,
@@ -276,6 +239,188 @@ const PRODUCTS: Product[] = [
     rating: 4.8,
     soldCount: '780+',
     description: 'Kuntum brokoli padat hijau tua segar. Bebas ulat dan pestisida sintetis, langsung didinginkan di PanenPod desa.'
+  },
+  {
+    id: 'p11',
+    name: 'Jagung Manis Madu Kupas Bersih Siap Masak',
+    category: 'sayur',
+    categoryLabel: 'Sayuran Segar',
+    weightLabel: '3 pcs',
+    price: 9500,
+    originalPrice: 14000,
+    discountPercent: 32,
+    image: '/products/jagung.jpg',
+    city: 'Kediri',
+    farmer: 'Pak Supardi',
+    harvestTime: 'Subuh 05:10 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-KDR-JGG06',
+    temperature: '3.5°C',
+    rating: 4.8,
+    soldCount: '460+',
+    description: 'Jagung manis madu dengan bulir penuh kuning keemasan. Dipetik saat kadar gula alami berada pada puncaknya.'
+  },
+  {
+    id: 'p13',
+    name: 'Kangkung Akar Lombok Segar Petik Pagi',
+    category: 'sayur',
+    categoryLabel: 'Sayuran Segar',
+    weightLabel: '300 gr',
+    price: 4500,
+    originalPrice: 7000,
+    discountPercent: 35,
+    image: '/products/kangkung.jpg',
+    city: 'Lombok Barat',
+    farmer: 'Kang Wahyu Pratama',
+    harvestTime: 'Subuh 05:20 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-LBK-KKG13',
+    temperature: '3.0°C',
+    rating: 4.9,
+    soldCount: '1.1rb+',
+    description: 'Kangkung lombok berbatang besar renyah dengan daun hijau muda segar. Sangat lezat untuk plecing atau tumis terasi pedas.'
+  },
+  {
+    id: 'p14',
+    name: 'Bayam Hijau Hidroponik Bebas Pestisida',
+    category: 'sayur',
+    categoryLabel: 'Sayuran Segar',
+    weightLabel: '250 gr',
+    price: 6000,
+    originalPrice: 9000,
+    discountPercent: 33,
+    image: '/products/bayam.jpg',
+    city: 'Malang',
+    farmer: 'Ibu Sri Wahyuni',
+    harvestTime: 'Subuh 05:40 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-MLG-BYM14',
+    temperature: '2.5°C',
+    rating: 4.9,
+    soldCount: '890+',
+    description: 'Bayam hijau hidroponik berdaun mulus dan tebal. Ditanam dengan air nutrisi steril tanpa pestisida kimia sintetis.'
+  },
+  {
+    id: 'p15',
+    name: 'Buncis Baby Kenia Super Renyah Pilihan',
+    category: 'sayur',
+    categoryLabel: 'Sayuran Segar',
+    weightLabel: '350 gr',
+    price: 8000,
+    originalPrice: 12000,
+    discountPercent: 33,
+    image: '/products/buncis.jpg',
+    city: 'Kota Batu',
+    farmer: 'Pak Bambang Irawan',
+    harvestTime: 'Pagi 06:00 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-BATU-BCS15',
+    temperature: '2.2°C',
+    rating: 4.8,
+    soldCount: '620+',
+    description: 'Buncis baby muda bertekstur manis renyah tanpa serat keras. Sangat digemari untuk tumis daging atau rebusan sehat.'
+  },
+  {
+    id: 'p16',
+    name: 'Terong Ungu Segar Kebun Lereng Pegunungan',
+    category: 'sayur',
+    categoryLabel: 'Sayuran Segar',
+    weightLabel: '500 gr',
+    price: 7500,
+    originalPrice: 11000,
+    discountPercent: 31,
+    image: '/products/terong.jpg',
+    city: 'Lumajang',
+    farmer: 'Pak Subagyo',
+    harvestTime: 'Subuh 05:15 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-LMJ-TRG16',
+    temperature: '4.0°C',
+    rating: 4.7,
+    soldCount: '410+',
+    description: 'Terong ungu mulus mengkilap tanpa cacat. Daging empuk manis bebas rasa pahit, nikmat untuk balado dan lodeh.'
+  },
+  {
+    id: 'p17',
+    name: 'Pakcoy Baby Hidroponik Batang Putih Renyah',
+    category: 'sayur',
+    categoryLabel: 'Sayuran Segar',
+    weightLabel: '300 gr',
+    price: 7000,
+    originalPrice: 10500,
+    discountPercent: 33,
+    image: '/products/pakcoy.jpg',
+    city: 'Kota Batu',
+    farmer: 'Kang Hendra Saputra',
+    harvestTime: 'Subuh 05:30 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-BATU-PKC17',
+    temperature: '2.0°C',
+    rating: 4.9,
+    soldCount: '730+',
+    description: 'Pakcoy mini segar hidroponik dengan bonggol bersih dan batang tebal juicy. Sangat cocok untuk tumis dan kuah kaldu hangat.'
+  },
+  {
+    id: 'p18',
+    name: 'Kubis / Kol Bulat Segar Lereng Pujon',
+    category: 'sayur',
+    categoryLabel: 'Sayuran Segar',
+    weightLabel: '800 gr',
+    price: 9000,
+    originalPrice: 13000,
+    discountPercent: 30,
+    image: '/products/kol.jpg',
+    city: 'Pujon Malang',
+    farmer: 'Ibu Sumarni',
+    harvestTime: 'Pagi 06:30 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-PJN-KOL18',
+    temperature: '3.0°C',
+    rating: 4.8,
+    soldCount: '540+',
+    description: 'Kepala kubis bulat padat bersusun rapat dengan rasa manis alami khas dataran tinggi. Tahan segar lebih lama.'
+  },
+
+  // --- HASIL LAUT & IKAN (7) ---
+  {
+    id: 'p3',
+    name: 'Fillet Ikan Tuna Sirip Kuning Yellowfin Sashimi',
+    category: 'seafood',
+    categoryLabel: 'Hasil Laut & Ikan',
+    weightLabel: '300 gr',
+    price: 29000,
+    originalPrice: 42000,
+    discountPercent: 31,
+    image: '/products/tuna.jpg',
+    city: 'Banyuwangi',
+    farmer: 'Pak H. Slamet Riyadi',
+    harvestTime: 'Subuh 04:30 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-BWI-TNA09',
+    temperature: '-18.5°C',
+    rating: 5.0,
+    soldCount: '420+',
+    description: 'Tuna Yellowfin hasil tangkapan pancing ramah lingkungan nelayan Muncar. Dibekukan seketika (blast-freezing) -18°C untuk mempertahankan tekstur sashimi.'
+  },
+  {
+    id: 'p5',
+    name: 'Udang Vaname Fresh Size 30 Tambak Pesisir',
+    category: 'seafood',
+    categoryLabel: 'Hasil Laut & Ikan',
+    weightLabel: '350 gr',
+    price: 32000,
+    originalPrice: 45000,
+    discountPercent: 29,
+    image: '/products/udang.jpg',
+    city: 'Tuban',
+    farmer: 'Pak Darsono Mulyo',
+    harvestTime: 'Subuh 05:15 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-TBN-UDG07',
+    temperature: '-18.2°C',
+    rating: 4.9,
+    soldCount: '310+',
+    description: 'Udang Vaname tambak bioflok modern air payau. Daging kenyal manis alami, kepala dan kulit utuh terjaga dalam cold chain.'
   },
   {
     id: 'p9',
@@ -298,6 +443,108 @@ const PRODUCTS: Product[] = [
     description: 'Ikan gurame kolam air deras pegunungan bebas bau tanah. Dibersihkan dan divakum dingin segera setelah panen.'
   },
   {
+    id: 'p19',
+    name: 'Ikan Nila Merah Hidup Air Kolam Deras',
+    category: 'seafood',
+    categoryLabel: 'Hasil Laut & Ikan',
+    weightLabel: '600 gr',
+    price: 24000,
+    originalPrice: 32000,
+    discountPercent: 25,
+    image: '/products/nila.jpg',
+    city: 'Blitar',
+    farmer: 'Pak Joko Waluyo',
+    harvestTime: 'Subuh 04:30 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-BLT-NLA19',
+    temperature: '1.8°C',
+    rating: 4.9,
+    soldCount: '610+',
+    description: 'Nila merah segar dipelihara dalam kolam semen air mengalir. Daging tebal gurih dan manis alami tanpa bau lumpur.'
+  },
+  {
+    id: 'p20',
+    name: 'Ikan Bandeng Juwana Cabut Duri Segar Higienis',
+    category: 'seafood',
+    categoryLabel: 'Hasil Laut & Ikan',
+    weightLabel: '400 gr',
+    price: 28000,
+    originalPrice: 38000,
+    discountPercent: 26,
+    image: '/products/bandeng.jpg',
+    city: 'Lamongan',
+    farmer: 'Cak Mustofa',
+    harvestTime: 'Subuh 05:00 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-LMG-BDG20',
+    temperature: '-18.0°C',
+    rating: 4.9,
+    soldCount: '480+',
+    description: 'Bandeng segar tambak pesisir utara, seluruh duri halus telah dicabut bersih secara teliti. Aman dikonsumsi anak-anak.'
+  },
+  {
+    id: 'p21',
+    name: 'Cumi-Cumi Seriti Segar Tangkapan Nelayan Pesisir',
+    category: 'seafood',
+    categoryLabel: 'Hasil Laut & Ikan',
+    weightLabel: '350 gr',
+    price: 34000,
+    originalPrice: 48000,
+    discountPercent: 29,
+    image: '/products/cumi.jpg',
+    city: 'Probolinggo',
+    farmer: 'Pak Salim Bahari',
+    harvestTime: 'Dini Hari 03:30 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-PBG-CMI21',
+    temperature: '-18.0°C',
+    rating: 4.9,
+    soldCount: '530+',
+    description: 'Cumi seriti segar tangkapan perahu nelayan tradisional. Daging kenyal manis alami, kantung tinta utuh tidak pecah.'
+  },
+  {
+    id: 'p22',
+    name: 'Fillet Ikan Kakap Merah Segar Pilihan Restoran',
+    category: 'seafood',
+    categoryLabel: 'Hasil Laut & Ikan',
+    weightLabel: '300 gr',
+    price: 38000,
+    originalPrice: 52000,
+    discountPercent: 27,
+    image: '/products/kakap.jpg',
+    city: 'Banyuwangi',
+    farmer: 'Pak Rusdianto',
+    harvestTime: 'Subuh 04:15 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-BWI-KKP22',
+    temperature: '-18.4°C',
+    rating: 4.9,
+    soldCount: '370+',
+    description: 'Fillet ikan kakap merah segar laut dalam tanpa tulang dan sisik. Tekstur daging padat kenyal dengan rasa gurih istimewa.'
+  },
+
+  // --- BUAH & TOMAT (6) ---
+  {
+    id: 'p2',
+    name: 'Tomat Beef Hidroponik Segar Pilihan Restoran',
+    category: 'buah',
+    categoryLabel: 'Buah & Tomat',
+    weightLabel: '500 gr',
+    price: 8500,
+    originalPrice: 13000,
+    discountPercent: 35,
+    image: '/products/tomat.jpg',
+    city: 'Kab. Malang',
+    farmer: 'Ibu Rahayu Lestari',
+    harvestTime: 'Pagi 06:15 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-MLG-TMT04',
+    temperature: '2.8°C',
+    rating: 4.9,
+    soldCount: '850+',
+    description: 'Tomat berdaging tebal, kadar air padat, kaya likopen dan vitamin C. Ditanam secara hidroponik tanpa pestisida kimia sintetis.'
+  },
+  {
     id: 'p10',
     name: 'Apel Manalagi Batu Matang Pohon Manis Renyah',
     category: 'buah',
@@ -318,45 +565,85 @@ const PRODUCTS: Product[] = [
     description: 'Apel Manalagi khas pegunungan Batu dengan aroma harum manis dan tekstur renyah alami tanpa lilin pengkilap.'
   },
   {
-    id: 'p11',
-    name: 'Jagung Manis Madu Kupas Bersih Siap Masak',
-    category: 'sayur',
-    categoryLabel: 'Sayuran Hijau',
-    weightLabel: '3 pcs',
-    price: 9500,
-    originalPrice: 14000,
-    discountPercent: 32,
-    image: '/products/jagung.jpg',
-    city: 'Kediri',
-    farmer: 'Pak Supardi',
-    harvestTime: 'Subuh 05:10 WIB',
+    id: 'p24',
+    name: 'Pisang Cavendish Sunpride Matang Alami',
+    category: 'buah',
+    categoryLabel: 'Buah & Tomat',
+    weightLabel: '1 sisir (1.2 kg)',
+    price: 23000,
+    originalPrice: 32000,
+    discountPercent: 28,
+    image: '/products/pisang.jpg',
+    city: 'Pasuruan',
+    farmer: 'Kelompok Tani Makmur',
+    harvestTime: 'Pagi 07:00 WIB',
     grade: 'Grade A',
-    batchId: 'PNH-2026-KDR-JGG06',
-    temperature: '3.5°C',
-    rating: 4.8,
-    soldCount: '460+',
-    description: 'Jagung manis madu dengan bulir penuh kuning keemasan. Dipetik saat kadar gula alami berada pada puncaknya.'
+    batchId: 'PNH-2026-PSR-PSG24',
+    temperature: '14.0°C',
+    rating: 4.9,
+    soldCount: '780+',
+    description: 'Pisang Cavendish berkulit kuning cerah mulus dengan daging lembut manis beraroma harum. Kaya kalium dan serat alami.'
   },
   {
-    id: 'p12',
-    name: 'Bawang Putih Tunggal Lanang Herbal Segar',
-    category: 'bumbu',
-    categoryLabel: 'Bumbu Dapur',
-    weightLabel: '250 gr',
-    price: 21000,
-    originalPrice: 29000,
+    id: 'p25',
+    name: 'Alpukat Mentega Super Pulen Tanpa Serat',
+    category: 'buah',
+    categoryLabel: 'Buah & Tomat',
+    weightLabel: '1 kg',
+    price: 32000,
+    originalPrice: 45000,
+    discountPercent: 29,
+    image: '/products/alpukat.jpg',
+    city: 'Probolinggo',
+    farmer: 'Pak Mulyono',
+    harvestTime: 'Kemarin Sore',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-PBG-ALP25',
+    temperature: '16.0°C',
+    rating: 4.9,
+    soldCount: '650+',
+    description: 'Alpukat mentega unggulan berdaging tebal kuning pekat. Tekstur sangat pulen legit tanpa rasa getir dan tanpa serat kasar.'
+  },
+  {
+    id: 'p26',
+    name: 'Jeruk Siam Madu Manis Segar Berair Banyuwangi',
+    category: 'buah',
+    categoryLabel: 'Buah & Tomat',
+    weightLabel: '1 kg',
+    price: 19500,
+    originalPrice: 28000,
+    discountPercent: 30,
+    image: '/products/jeruk.jpg',
+    city: 'Banyuwangi',
+    farmer: 'Pak H. Ridwan',
+    harvestTime: 'Pagi 06:30 WIB',
+    grade: 'Grade A',
+    batchId: 'PNH-2026-BWI-JRK26',
+    temperature: '12.0°C',
+    rating: 4.8,
+    soldCount: '820+',
+    description: 'Jeruk siam madu khas Banyuwangi dengan kulit tipis dan bulir air melimpah. Rasa manis segar menyegarkan tenggorokan.'
+  },
+  {
+    id: 'p27',
+    name: 'Semangka Merah Non-Biji Segar Manis Renyah',
+    category: 'buah',
+    categoryLabel: 'Buah & Tomat',
+    weightLabel: '2.5 kg',
+    price: 22000,
+    originalPrice: 30000,
     discountPercent: 27,
-    image: '/products/bawang_putih.jpg',
-    city: 'Kota Batu',
-    farmer: 'Ibu Siti Munawaroh',
+    image: '/products/semangka.jpg',
+    city: 'Bojonegoro',
+    farmer: 'Cak Darman',
     harvestTime: 'Kemarin Siang',
     grade: 'Grade A',
-    batchId: 'PNH-2026-BATU-BWP09',
-    temperature: '20.0°C',
-    rating: 4.9,
-    soldCount: '390+',
-    description: 'Bawang putih lanang tunggal pilihan herbal berkhasiat tinggi untuk kesehatan daya tahan tubuh dan kebugaran.'
-  }
+    batchId: 'PNH-2026-BJN-SMG27',
+    temperature: '10.0°C',
+    rating: 4.8,
+    soldCount: '490+',
+    description: 'Semangka merah tanpa biji dengan daging buah merah menyala, berair banyak dan tekstur renyah manis alami.'
+  },
 ];
 
 export default function PanenHubTokopediaApp() {
@@ -722,12 +1009,12 @@ export default function PanenHubTokopediaApp() {
           <header className="sticky top-0 z-40 bg-white border-b border-[#e5e7e9] shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
             <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
               
-              <div className="flex items-center justify-between gap-3 sm:gap-6">
+              <div className="flex items-center justify-between gap-2.5 sm:gap-6">
                 
                 {/* Custom Modern PanenHub Logo (Click to Return to Gateway) */}
                 <div
                   onClick={handleLogoutToGateway}
-                  className="cursor-pointer"
+                  className="cursor-pointer shrink-0"
                   title="Kembali ke Beranda PanenHub"
                 >
                   <PanenHubLogo size="md" />
@@ -785,22 +1072,22 @@ export default function PanenHubTokopediaApp() {
                 </div>
 
                 {/* Clean Rounded Search Bar */}
-                <div className="flex-1 max-w-4xl">
+                <div className="flex-1 max-w-4xl min-w-0">
                   <div className="relative flex items-center">
-                    <Search className="w-4 h-4 absolute left-3.5 text-[#8d96aa]" />
+                    <Search className="w-4 h-4 absolute left-3 text-[#8d96aa]" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Cari cabai, ikan tuna, tomat beef, selada bromo..."
-                      className="w-full pl-10 pr-9 py-2 rounded-lg bg-white border border-[#e5e7e9] text-[13px] text-[#212121] placeholder:text-[#8d96aa] font-normal focus:outline-none focus:border-[#03ac0e] transition"
+                      placeholder="Cari sayur, ikan, buah, bumbu..."
+                      className="w-full pl-9 pr-8 py-2 rounded-lg bg-[#f3f4f5]/60 hover:bg-[#f3f4f5] focus:bg-white border border-[#e5e7e9] text-[13px] text-[#212121] placeholder:text-[#8d96aa] font-normal focus:outline-none focus:border-[#03ac0e] transition"
                     />
                     {searchQuery && (
                       <button
                         onClick={() => setSearchQuery('')}
-                        className="absolute right-3 text-[#8d96aa] hover:text-[#212121] outline-none cursor-pointer"
+                        className="absolute right-2.5 text-[#8d96aa] hover:text-[#212121] outline-none cursor-pointer"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
@@ -849,24 +1136,25 @@ export default function PanenHubTokopediaApp() {
               </div>
 
               {/* Simple Clean Delivery Location Bar */}
-              <div className="flex items-center justify-between sm:justify-end pt-1.5 text-[11px] sm:text-[12px] text-[#6d7588]">
+              <div className="flex items-center justify-between gap-2.5 pt-2 text-[11px] sm:text-[12px] text-[#6d7588]">
                 <div
-                  onClick={() => setIsLocationModalOpen(true)}
-                  className="flex items-center gap-1 text-[#4b5563] hover:text-[#03ac0e] cursor-pointer font-normal truncate max-w-full"
+                  onClick={() => setIsWarungModalOpen(true)}
+                  className="flex items-center gap-1.5 text-[#4b5563] hover:text-[#03ac0e] cursor-pointer font-normal truncate min-w-0 group"
+                  title="Klik untuk memilih titik ambil"
                 >
                   <MapPin className="w-3.5 h-3.5 text-[#03ac0e] shrink-0" />
                   <span className="truncate">
-                    Titik Ambil: <span className="font-semibold text-[#212121]">{selectedLocation.name} ({selectedLocation.address.split(',')[0]})</span>
+                    Titik Ambil: <strong className="font-semibold text-[#212121]">{selectedLocation.name}</strong> <span className="hidden sm:inline text-[#6d7588]">({selectedLocation.address.split(',')[0]})</span>
                   </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#6d7588] shrink-0" />
+                  <ChevronDown className="w-3 h-3 text-[#8d96aa] shrink-0 group-hover:text-[#03ac0e]" />
                 </div>
 
-                <div className="flex items-center sm:hidden">
+                <div className="flex items-center shrink-0">
                   <button
                     onClick={() => setIsWarungModalOpen(true)}
-                    className="text-[#03ac0e] font-medium text-xs shrink-0 outline-none cursor-pointer"
+                    className="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-[#03ac0e] font-semibold text-[11px] sm:text-xs border border-emerald-200 transition outline-none cursor-pointer shadow-2xs"
                   >
-                    Ubah Titik Ambil
+                    Ubah Titik
                   </button>
                 </div>
               </div>
@@ -874,15 +1162,15 @@ export default function PanenHubTokopediaApp() {
             </div>
 
             {/* Horizontal Category Navigation Bar */}
-            <div className="border-t border-[#e5e7e9] bg-white px-3 sm:px-6 lg:px-8 py-2">
+            <div className="border-t border-[#e5e7e9] bg-white px-4 sm:px-6 lg:px-8 py-2">
               <div className="w-full max-w-[1720px] mx-auto flex items-center gap-2 overflow-x-auto scrollbar-none text-[13px] py-0.5">
                 {[
                   { id: 'for_you', label: 'Semua Panen', icon: '✨' },
                   { id: 'flash_sale', label: 'Panen Hari Ini', icon: '🔥' },
                   { id: 'sayur', label: 'Sayuran Segar', icon: '🥬' },
-                  { id: 'bumbu', label: 'Bumbu Dapur', icon: '🌶️' },
                   { id: 'seafood', label: 'Hasil Laut & Ikan', icon: '🐟' },
-                  { id: 'buah', label: 'Buah & Tomat', icon: '🍅' },
+                  { id: 'buah', label: 'Buah & Tomat', icon: '🍎' },
+                  { id: 'bumbu', label: 'Bumbu Dapur', icon: '🌶️' },
                   { id: 'pesanan', label: `Tiket Ambil (${orders.length})`, icon: '🎟️' }
                 ].map(tab => {
                   const isActive = activeNavTab === tab.id;
@@ -1013,7 +1301,7 @@ export default function PanenHubTokopediaApp() {
       )}
 
       {/* ── MAIN CONTENT WORKSPACE (LEBAR PENUH & LAPANG) ── */}
-      <main className="w-full max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5 flex-1 space-y-5">
+      <main className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex-1 space-y-5">
 
         {/* ══════════════════════════════════════════════════════════════ */}
         {/* POV 0: GATEWAY / LOGIN / PILIH PERAN PORTAL MASUK             */}
@@ -1232,34 +1520,20 @@ export default function PanenHubTokopediaApp() {
             {(activeNavTab === 'for_you' || activeNavTab === 'flash_sale' || activeNavTab === 'sayur' || activeNavTab === 'bumbu' || activeNavTab === 'seafood' || activeNavTab === 'buah') && (
           <div className="space-y-4 sm:space-y-5">
             
-            {/* Tokopedia Clean Promo Banner (Bahasa Ramah, Alami & Tidak Kaku) */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-[#02980c] via-[#03ac0e] to-[#05b810] rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1.5 max-w-2xl">
-                <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-[11px] font-medium text-emerald-50">
-                  <span>🌱 Petik Subuh Tadi</span>
-                  <span>•</span>
-                  <span>❄️ Selalu Segar</span>
-                  <span>•</span>
-                  <span>🏠 Ambil di Warung</span>
-                </div>
-                <h1 className="text-base sm:text-lg md:text-xl font-bold tracking-tight text-white">
-                  Belanja Sayur & Lauk Segar, Ambil di Warung Tetangga
+            {/* Tokopedia Clean Promo Banner (Bahasa Ramah, Alami & Proporsional) */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-[#008f09] via-[#03ac0e] to-[#0eb519] rounded-2xl p-4 sm:p-5 md:py-4.5 md:px-6 text-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="space-y-1 max-w-xl">
+                <h1 className="text-sm sm:text-base md:text-lg font-bold tracking-tight text-white leading-snug">
+                  Belanja Sayur, Ikan & Buah Segar, Ambil di Warung Tetangga
                 </h1>
-                <p className="text-xs sm:text-sm text-emerald-100 font-normal leading-relaxed">
-                  Langsung dari petani lokal terpercaya. Kualitas segar setiap pagi, harga lebih hemat, dan selalu gratis ongkir tanpa syarat.
+                <p className="text-[11px] sm:text-xs text-emerald-50/90 font-normal leading-relaxed">
+                  Langsung dari petani kebun dan nelayan pesisir lokal. Dipanen segar setiap pagi dengan jaminan harga hemat dan Rp 0 ongkos kirim.
                 </p>
               </div>
 
-              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0 self-start md:self-center">
-                <button
-                  onClick={() => setIsLocationModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 border border-white/20 text-xs font-medium transition cursor-pointer outline-none flex items-center gap-1.5"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-emerald-200" />
-                  <span>Ambil di: <strong>{selectedLocation.name}</strong></span>
-                  <ChevronDown className="w-3.5 h-3.5 text-emerald-200" />
-                </button>
-                <span className="px-3 py-1.5 rounded-lg bg-white text-[#03ac0e] text-xs font-semibold shadow-xs">
+              <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 backdrop-blur-xs text-xs font-semibold text-white border border-white/25 shadow-2xs">
+                  <span className="w-2 h-2 rounded-full bg-amber-300"></span>
                   Rp 0 Bebas Ongkir
                 </span>
               </div>
@@ -1318,6 +1592,10 @@ export default function PanenHubTokopediaApp() {
                         alt={p.name}
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/products/cabai.jpg';
+                        }}
                       />
 
                       {/* Red Discount Tag Top-Left */}
