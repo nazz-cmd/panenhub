@@ -1253,27 +1253,19 @@ export default function PanenHubTokopediaApp() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               
               {/* Row 1: Logo & Role Badge */}
-              <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div
-                    onClick={handleLogoutToGateway}
-                    className="cursor-pointer shrink-0"
-                    title="Kembali ke Portal PanenHub"
-                  >
-                    <PanenHubLogo size="md" />
-                  </div>
-                  <div className="hidden sm:block h-5 w-px bg-[#e5e7e9]" />
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ebf5e9] text-[#03ac0e] text-[11px] font-semibold border border-[#03ac0e]/20 shrink-0">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Mitra Produsen</span>
-                  </span>
+              <div className="flex items-center gap-2.5">
+                <div
+                  onClick={handleLogoutToGateway}
+                  className="cursor-pointer shrink-0"
+                  title="Kembali ke Portal PanenHub"
+                >
+                  <PanenHubLogo size="md" />
                 </div>
-
-                {/* Cold Pod Telemetry Status Badge */}
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-700 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span>{producerType === 'petani' ? '❄️ Cold Pod: 2.4°C' : '❄️ Ice Pod: 0.8°C'}</span>
-                </div>
+                <div className="h-5 w-px bg-[#e5e7e9]" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ebf5e9] text-[#03ac0e] text-[11px] font-semibold border border-[#03ac0e]/20 shrink-0">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Mitra Produsen</span>
+                </span>
               </div>
 
               {/* Persona Segmented Switch (Petani Kebun / Nelayan Laut) */}
@@ -1335,7 +1327,7 @@ export default function PanenHubTokopediaApp() {
         <header className="sticky top-0 z-40 bg-white border-b border-[#e5e7e9] shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
           <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
             <div className="flex items-center justify-between gap-3">
-              {/* Left: Logo & Identity */}
+              {/* Left: Logo & Role Badge */}
               <div className="flex items-center gap-2.5 sm:gap-3.5">
                 <div
                   onClick={handleLogoutToGateway}
@@ -1345,15 +1337,10 @@ export default function PanenHubTokopediaApp() {
                   <PanenHubLogo size="md" />
                 </div>
                 <div className="h-5 w-px bg-slate-200" />
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs sm:text-sm text-[#212121]">
-                    Warung Bu Siti
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold border border-emerald-300 shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#03ac0e] animate-pulse"></span>
-                    <span>Drop-Point Resmi</span>
-                  </span>
-                </div>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ebf5e9] text-[#03ac0e] text-[11px] font-semibold border border-[#03ac0e]/20 shrink-0">
+                  <Store className="w-3.5 h-3.5" />
+                  <span>Mitra Warung</span>
+                </span>
               </div>
 
               {/* Desktop Subpage Tabs Navigation */}
@@ -1377,17 +1364,6 @@ export default function PanenHubTokopediaApp() {
                     <span>{tab.label}</span>
                   </button>
                 ))}
-              </div>
-
-              {/* Right: Live Commission Balance Badge */}
-              <div
-                onClick={() => setWarungTab('komisi')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs cursor-pointer hover:bg-emerald-100 transition shadow-2xs"
-                title="Lihat Rincian Saldo Komisi"
-              >
-                <Wallet className="w-3.5 h-3.5 text-[#03ac0e]" />
-                <span className="text-[#6d7588] hidden sm:inline">Komisi:</span>
-                <strong className="text-[#03ac0e]">Rp {warungBalance.toLocaleString('id-ID')}</strong>
               </div>
             </div>
           </div>
