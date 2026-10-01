@@ -729,6 +729,7 @@ export default function PanenHubTokopediaApp() {
 
   // Producer Portal State (Petani Sayur & Nelayan Pesisir)
   const [producerType, setProducerType] = useState<'petani' | 'nelayan'>('petani');
+  const [producerTab, setProducerTab] = useState<'ringkasan' | 'kuota' | 'setor' | 'keuangan'>('ringkasan');
   const [farmerWalletBalance, setFarmerWalletBalance] = useState<number>(4860000);
   const [simWeightKg, setSimWeightKg] = useState<number>(50);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
@@ -736,6 +737,8 @@ export default function PanenHubTokopediaApp() {
   const [depositKg, setDepositKg] = useState<number>(30);
 
   // Mitra Warung Portal State
+  const [warungTab, setWarungTab] = useState<'dashboard' | 'validasi' | 'rak' | 'komisi'>('dashboard');
+  const [warungRakFilter, setWarungRakFilter] = useState<'all' | 'ready' | 'collected'>('all');
   const [warungBalance, setWarungBalance] = useState<number>(186000);
   const [inputWarungPin, setInputWarungPin] = useState<string>('');
   const [warungFeedback, setWarungFeedback] = useState<string | null>(null);
@@ -758,7 +761,7 @@ export default function PanenHubTokopediaApp() {
     try {
       confetti({ particleCount: 60, spread: 80, origin: { y: 0.6 } });
     } catch {}
-    showToast(`💰 Payout Instan T+0 Berhasil! Rp ${amount.toLocaleString('id-ID')} cair seketika ke Rekening Petani.`);
+    showToast(`💰 Payout Instan T+0 Berhasil! Rp ${amount.toLocaleString('id-ID')} cair seketika ke Rekening Bank Petani.`);
   };
 
   const handleDepositHarvest = () => {
@@ -771,12 +774,36 @@ export default function PanenHubTokopediaApp() {
     showToast(`🌱 Setoran ${depositKg} kg "${depositCommodity}" tercatat di Cold Pod! Saldo bertambah +Rp ${earned.toLocaleString('id-ID')}`);
   };
 
-  const handleValidateWarungPin = () => {
-    const targetOrder = orders.find(o => o.pin === inputWarungPin.trim());
+  const handleWarungWithdraw = () => {
+    if (warungBalance <= 0) {
+      showToast('⚠️ Saldo komisi saat ini Rp 0 atau telah ditarik.');
+      return;
+    }
+    const amount = warungBalance;
+    setWarungBalance(0);
+    try {
+      confetti({ particleCount: 60, spread: 80, origin: { y: 0.6 } });
+    } catch {}
+    showToast(`💰 Penarikan Komisi Berhasil! Rp ${amount.toLocaleString('id-ID')} ditransfer ke Rekening BCA Bu Siti.`);
+  };
+
+  const handleValidateWarungPin = (customPin?: string) => {
+    const pinToUse = (customPin || inputWarungPin).trim();
+    if (!pinToUse) {
+      setWarungFeedback('⚠️ Mohon masukkan 4 digit PIN konsumen.');
+      return;
+    }
+    const targetOrder = orders.find(o => o.pin === pinToUse);
     if (targetOrder) {
+      if (targetOrder.status === 'collected') {
+        setWarungFeedback(`ℹ️ Paket ${targetOrder.id} sudah pernah diambil sebelumnya.`);
+        showToast(`ℹ️ Paket ${targetOrder.id} sudah selesai diserahkan.`);
+        return;
+      }
       setWarungBalance(prev => prev + 2000);
-      setOrders(prev => prev.map(o => o.pin === inputWarungPin.trim() ? { ...o, status: 'collected' } : o));
-      setWarungFeedback(`✅ PIN ${inputWarungPin} VALID! Paket pesanan diserahkan ke pelanggan. Komisi +Rp 2.000 masuk ke saldo.`);
+      setOrders(prev => prev.map(o => o.pin === pinToUse ? { ...o, status: 'collected' } : o));
+      setInputWarungPin('');
+      setWarungFeedback(`✅ PIN ${pinToUse} VALID! Paket ${targetOrder.id} diserahkan ke pelanggan. Komisi +Rp 2.000 masuk ke saldo.`);
       try {
         confetti({ particleCount: 50 });
       } catch {}
@@ -1225,7 +1252,7 @@ export default function PanenHubTokopediaApp() {
           <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               
-              {/* Row 1: Logo, Role Badge & Mobile Logout Button */}
+              {/* Row 1: Logo & Role Badge */}
               <div className="flex items-center justify-between w-full sm:w-auto gap-3">
                 <div className="flex items-center gap-2.5">
                   <div
@@ -1242,18 +1269,14 @@ export default function PanenHubTokopediaApp() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 sm:hidden">
-                  <button
-                    onClick={handleLogoutToGateway}
-                    className="px-2.5 py-1 rounded-lg border border-slate-200 text-[#6d7588] text-xs font-medium flex items-center gap-1 transition hover:bg-slate-50"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Ganti</span>
-                  </button>
+                {/* Cold Pod Telemetry Status Badge */}
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-700 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  <span>{producerType === 'petani' ? '❄️ Cold Pod: 2.4°C' : '❄️ Ice Pod: 0.8°C'}</span>
                 </div>
               </div>
 
-              {/* Persona Segmented Switch (Clean 1-line on mobile) */}
+              {/* Persona Segmented Switch (Petani Kebun / Nelayan Laut) */}
               <div className="flex items-center p-1 bg-[#f3f4f5] rounded-xl border border-[#e5e7e9] text-xs w-full sm:w-auto">
                 <button
                   onClick={() => setProducerType('petani')}
@@ -1279,20 +1302,27 @@ export default function PanenHubTokopediaApp() {
                 </button>
               </div>
 
-              {/* Desktop Actions */}
-              <div className="hidden sm:flex items-center gap-2.5">
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-700 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span>{producerType === 'petani' ? '❄️ Cold Pod: 2.4°C' : '❄️ Ice Pod: 0.8°C'}</span>
-                </div>
-                <button
-                  onClick={handleLogoutToGateway}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[#6d7588] hover:text-[#212121] hover:bg-slate-50 text-xs font-medium transition flex items-center gap-1.5 outline-none cursor-pointer"
-                  title="Ganti Peran Portal"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Ganti Peran</span>
-                </button>
+              {/* Desktop Subpage Tabs Navigation */}
+              <div className="hidden lg:flex items-center gap-1 bg-[#f3f4f5] p-1 rounded-xl border border-[#e5e7e9] text-xs">
+                {[
+                  { id: 'ringkasan', label: 'Ringkasan', icon: TrendingUp },
+                  { id: 'kuota', label: 'Kuota Order', icon: Layers },
+                  { id: 'setor', label: 'Setoran & QC', icon: Plus },
+                  { id: 'keuangan', label: 'Keuangan & Nilai Tambah', icon: Wallet },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setProducerTab(tab.id as any)}
+                    className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer outline-none flex items-center gap-1.5 ${
+                      producerTab === tab.id
+                        ? 'bg-white text-[#03ac0e] shadow-2xs font-bold'
+                        : 'text-[#6d7588] hover:text-[#212121]'
+                    }`}
+                  >
+                    <tab.icon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
               </div>
 
             </div>
@@ -1326,22 +1356,38 @@ export default function PanenHubTokopediaApp() {
                 </div>
               </div>
 
-              {/* Right: Balance & Exit */}
-              <div className="flex items-center gap-2">
-                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-xs">
-                  <Wallet className="w-3.5 h-3.5 text-[#03ac0e]" />
-                  <span className="text-[#6d7588]">Komisi:</span>
-                  <strong className="text-[#03ac0e]">Rp {warungBalance.toLocaleString('id-ID')}</strong>
-                </div>
+              {/* Desktop Subpage Tabs Navigation */}
+              <div className="hidden lg:flex items-center gap-1 bg-[#f3f4f5] p-1 rounded-xl border border-[#e5e7e9] text-xs">
+                {[
+                  { id: 'dashboard', label: 'Ringkasan Warung', icon: Store },
+                  { id: 'validasi', label: 'Validasi PIN', icon: QrCode },
+                  { id: 'rak', label: `Rak Paket (${orders.length})`, icon: Layers },
+                  { id: 'komisi', label: 'Saldo Komisi', icon: Wallet },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setWarungTab(tab.id as any)}
+                    className={`px-3.5 py-1.5 rounded-lg font-medium transition cursor-pointer outline-none flex items-center gap-1.5 ${
+                      warungTab === tab.id
+                        ? 'bg-white text-[#03ac0e] shadow-2xs font-bold'
+                        : 'text-[#6d7588] hover:text-[#212121]'
+                    }`}
+                  >
+                    <tab.icon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
 
-                <button
-                  onClick={handleLogoutToGateway}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[#6d7588] hover:text-[#212121] hover:bg-slate-50 text-xs font-medium transition flex items-center gap-1.5 outline-none cursor-pointer"
-                  title="Ganti Peran Portal"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Ganti Peran</span>
-                </button>
+              {/* Right: Live Commission Balance Badge */}
+              <div
+                onClick={() => setWarungTab('komisi')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs cursor-pointer hover:bg-emerald-100 transition shadow-2xs"
+                title="Lihat Rincian Saldo Komisi"
+              >
+                <Wallet className="w-3.5 h-3.5 text-[#03ac0e]" />
+                <span className="text-[#6d7588] hidden sm:inline">Komisi:</span>
+                <strong className="text-[#03ac0e]">Rp {warungBalance.toLocaleString('id-ID')}</strong>
               </div>
             </div>
           </div>
@@ -1839,556 +1885,704 @@ export default function PanenHubTokopediaApp() {
     {/* ══════════════════════════════════════════════════════════════ */}
     {/* POV 2: MITRA PETANI & NELAYAN (ANTI-IJON & COLD POD DESA)     */}
     {/* ══════════════════════════════════════════════════════════════ */}
+    {/* ══════════════════════════════════════════════════════════════ */}
+    {/* POV 2: MITRA PETANI & NELAYAN (ANTI-IJON & COLD POD DESA)     */}
+    {/* ══════════════════════════════════════════════════════════════ */}
     {activePov === 'producer' && (
       <div className="space-y-4 sm:space-y-5 animate-fadeIn">
         
-        {/* Tokopedia Seller Profile Card */}
-        <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3.5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 border ${
-                producerType === 'petani' 
-                  ? 'bg-[#ebf5e9] text-[#03ac0e] border-[#03ac0e]/20' 
-                  : 'bg-blue-50 text-blue-600 border-blue-200'
-              }`}>
-                {producerType === 'petani' ? '🌱' : '🐟'}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-base sm:text-lg font-bold text-[#212121] leading-tight">
-                    {producerType === 'petani' ? 'Pak Sugeng Widodo' : 'Pak H. Slamet Riyadi'}
-                  </h1>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] inline-flex items-center gap-1 border border-emerald-300">
-                    <CheckCircle2 className="w-3 h-3" /> Terverifikasi
-                  </span>
-                </div>
-                <p className="text-xs text-[#6d7588] mt-0.5 truncate">
-                  {producerType === 'petani'
-                    ? 'Kelompok Tani Makmur • Bumiaji, Batu'
-                    : 'KUB Mina Barokah • Pesisir Muncar, Banyuwangi'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 pt-1 sm:pt-0">
-              <button
-                onClick={() => setIsDepositModalOpen(true)}
-                className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer outline-none"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Setor Panen</span>
-              </button>
-              <button
-                onClick={handleFarmerWithdraw}
-                className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-white border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer outline-none"
-              >
-                <Wallet className="w-3.5 h-3.5" />
-                <span>Tarik Saldo</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Ringkasan Operasional Hari Ini */}
-        <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-[#f3f4f5]">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#03ac0e]" />
-              <h2 className="text-xs sm:text-sm font-bold text-[#212121]">Ringkasan Operasional Hari Ini</h2>
-            </div>
-            <span className="text-[11px] text-[#6d7588] hidden sm:inline">Sensor Timbangan & Cold Chain Aktif</span>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-1">
-            {/* Col 1 */}
-            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
-              <span className="text-[11px] text-[#6d7588] block">Setoran Hari Ini</span>
-              <span className="text-xl font-bold text-[#212121] block">
-                {producerType === 'petani' ? '120 Kg' : '95 Kg'}
-              </span>
-              <span className="text-[10px] text-[#03ac0e] font-semibold block">
-                {producerType === 'petani' ? '✓ Lolos Sensor QC Grade A' : '✓ Standar Ekspor Sashimi'}
-              </span>
-            </div>
-
-            {/* Col 2 */}
-            <div className="p-3 rounded-lg bg-[#ebf5e9]/70 border border-[#03ac0e]/20 space-y-1">
-              <span className="text-[11px] text-[#6d7588] block">Saldo Siap Tarik (T+0)</span>
-              <span className="text-xl font-bold text-[#03ac0e] block">
-                Rp {farmerWalletBalance.toLocaleString('id-ID')}
-              </span>
-              <button
-                onClick={handleFarmerWithdraw}
-                className="text-[10px] text-[#03ac0e] font-bold hover:underline block cursor-pointer outline-none"
-              >
-                Tarik ke Rekening →
-              </button>
-            </div>
-
-            {/* Col 3 */}
-            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
-              <span className="text-[11px] text-[#6d7588] block">
-                {producerType === 'petani' ? 'Suhu Cold Pod' : 'Suhu Slurry Ice'}
-              </span>
-              <span className="text-xl font-bold text-[#212121] block">
-                {producerType === 'petani' ? '2.4°C' : '0.8°C'}
-              </span>
-              <span className="text-[10px] text-[#03ac0e] font-semibold block">
-                {producerType === 'petani' ? 'Optimal Bertenaga Surya' : 'Super Chilled Dermaga'}
-              </span>
-            </div>
-
-            {/* Col 4 */}
-            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
-              <span className="text-[11px] text-[#6d7588] block">Kapasitas Pod</span>
-              <span className="text-xl font-bold text-[#212121] block">
-                {producerType === 'petani' ? '84%' : '76%'}
-              </span>
-              <span className="text-[10px] text-[#6d7588] block">
-                {producerType === 'petani' ? 'Slot sisa 35 kg' : 'Slot sisa 45 kg'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Demand Quota Section (Early Morning Batching from Consumer Orders) */}
-        <div id="kuota-section" className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#e5e7e9]">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm sm:text-base font-bold text-[#212121]">
-                  🎯 Alokasi Kuota Permintaan Masuk
-                </h2>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] text-[10px] font-bold">
-                  Sinkron Pesanan
-                </span>
-              </div>
-              <p className="text-xs text-[#6d7588] mt-0.5">
-                Kebutuhan panen dari konsumen yang siap Anda setor langsung hari ini.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setIsDepositModalOpen(true)}
-              className="px-3.5 py-1.5 rounded-lg border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition self-start sm:self-center cursor-pointer outline-none"
-            >
-              + Setor Komoditas
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            {(producerType === 'petani'
-              ? [
-                  {
-                    name: 'Cabai Rawit Merah Super',
-                    origin: 'Bumiaji, Batu',
-                    quota: 150,
-                    fulfilled: 115,
-                    panenHubPrice: 24500,
-                    tengkulakPrice: 16000,
-                    unit: 'kg',
-                    icon: '🌶️',
-                    status: 'Butuh 35 kg lagi'
-                  },
-                  {
-                    name: 'Tomat Beef Hidroponik',
-                    origin: 'Pujon, Malang',
-                    quota: 200,
-                    fulfilled: 180,
-                    panenHubPrice: 14000,
-                    tengkulakPrice: 8000,
-                    unit: 'kg',
-                    icon: '🍅',
-                    status: 'Butuh 20 kg lagi'
-                  },
-                  {
-                    name: 'Selada Romaine Bromo',
-                    origin: 'Batu (1.100 mdpl)',
-                    quota: 80,
-                    fulfilled: 80,
-                    panenHubPrice: 18000,
-                    tengkulakPrice: 11000,
-                    unit: 'kg',
-                    icon: '🥬',
-                    status: '✅ 100% Kuota Terpenuhi'
-                  },
-                  {
-                    name: 'Wortel Baby Organik',
-                    origin: 'Bumiaji, Batu',
-                    quota: 120,
-                    fulfilled: 95,
-                    panenHubPrice: 16000,
-                    tengkulakPrice: 9500,
-                    unit: 'kg',
-                    icon: '🥕',
-                    status: 'Butuh 25 kg lagi'
-                  }
-                ]
-              : [
-                  {
-                    name: 'Ikan Tuna Sirip Kuning',
-                    origin: 'Perairan Selat Bali',
-                    quota: 120,
-                    fulfilled: 85,
-                    panenHubPrice: 38000,
-                    tengkulakPrice: 25000,
-                    unit: 'kg',
-                    icon: '🐟',
-                    status: 'Butuh 35 kg lagi'
-                  },
-                  {
-                    name: 'Udang Vaname Pesisir Super',
-                    origin: 'Tambak Muncar, Banyuwangi',
-                    quota: 100,
-                    fulfilled: 90,
-                    panenHubPrice: 45000,
-                    tengkulakPrice: 30000,
-                    unit: 'kg',
-                    icon: '🦐',
-                    status: 'Butuh 10 kg lagi'
-                  },
-                  {
-                    name: 'Ikan Cakalang Segar Muncar',
-                    origin: 'Teluk Pangpang',
-                    quota: 150,
-                    fulfilled: 120,
-                    panenHubPrice: 28000,
-                    tengkulakPrice: 18000,
-                    unit: 'kg',
-                    icon: '🐟',
-                    status: 'Butuh 30 kg lagi'
-                  },
-                  {
-                    name: 'Fillet Kakap Merah Segar',
-                    origin: 'Pesisir Grajagan',
-                    quota: 80,
-                    fulfilled: 80,
-                    panenHubPrice: 52000,
-                    tengkulakPrice: 35000,
-                    unit: 'kg',
-                    icon: '🐠',
-                    status: '✅ 100% Kuota Terpenuhi'
-                  }
-                ]
-            ).map((item, idx) => {
-              const pct = Math.min(100, Math.round((item.fulfilled / item.quota) * 100));
-              const isFull = pct === 100;
-              return (
-                <div key={idx} className="p-3.5 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9] space-y-3 flex flex-col justify-between">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xl">{item.icon}</span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        isFull ? 'bg-emerald-100 text-[#03ac0e]' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {item.status}
+        {/* SUBPAGE 1: RINGKASAN OPERASIONAL */}
+        {producerTab === 'ringkasan' && (
+          <div className="space-y-4 sm:space-y-5 animate-fadeIn">
+            {/* Tokopedia Seller Profile Card */}
+            <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 border ${
+                    producerType === 'petani' 
+                      ? 'bg-[#ebf5e9] text-[#03ac0e] border-[#03ac0e]/20' 
+                      : 'bg-blue-50 text-blue-600 border-blue-200'
+                  }`}>
+                    {producerType === 'petani' ? '🌱' : '🐟'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="text-base sm:text-lg font-bold text-[#212121] leading-tight">
+                        {producerType === 'petani' ? 'Pak Sugeng Widodo' : 'Pak H. Slamet Riyadi'}
+                      </h1>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] inline-flex items-center gap-1 border border-emerald-300">
+                        <CheckCircle2 className="w-3 h-3" /> Terverifikasi
                       </span>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-xs text-[#212121] leading-tight">{item.name}</h4>
-                      <span className="text-[10px] text-[#8d96aa] block mt-0.5">{item.origin}</span>
-                    </div>
-                    
-                    <div className="space-y-1 pt-1">
-                      <div className="flex justify-between text-[11px] text-[#6d7588]">
-                        <span>Terkumpul: <strong>{item.fulfilled} {item.unit}</strong></span>
-                        <span>Target: {item.quota} {item.unit}</span>
-                      </div>
-                      <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500 bg-[#03ac0e]"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-[#e5e7e9] text-xs space-y-1">
-                    <div className="flex justify-between text-[#212121]">
-                      <span className="text-[#6d7588]">Harga PanenHub:</span>
-                      <strong className="text-[#03ac0e]">Rp{item.panenHubPrice.toLocaleString('id-ID')}</strong>
-                    </div>
-                    <div className="flex justify-between text-[11px] text-[#8d96aa]">
-                      <span>Harga Tengkulak:</span>
-                      <span className="line-through">Rp{item.tengkulakPrice.toLocaleString('id-ID')}</span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setDepositCommodity(item.name);
-                        setIsDepositModalOpen(true);
-                      }}
-                      className="w-full mt-1 py-1.5 rounded-md bg-white hover:bg-slate-100 border border-[#e5e7e9] text-xs font-medium text-[#212121] transition outline-none cursor-pointer"
-                    >
-                      + Setor Batch
-                    </button>
+                    <p className="text-xs text-[#6d7588] mt-0.5 truncate">
+                      {producerType === 'petani'
+                        ? 'Kelompok Tani Makmur • Bumiaji, Batu'
+                        : 'KUB Mina Barokah • Pesisir Muncar, Banyuwangi'}
+                    </p>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Tokopedia Seller Financial Comparison: Kalkulator Nilai Tambah vs Sistem Ijon */}
-        <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#e5e7e9]">
-            <div>
-              <div className="flex items-center gap-2">
-                <Scale className="w-4 h-4 text-[#03ac0e]" />
-                <h3 className="text-sm sm:text-base font-bold text-[#212121]">
-                  {producerType === 'petani'
-                    ? 'Kalkulator Transparansi & Nilai Tambah vs Sistem Ijon Desa'
-                    : 'Kalkulator Transparansi & Nilai Tambah vs Pengepul Dermaga'}
-                </h3>
+                <div className="flex items-center gap-2 pt-1 sm:pt-0">
+                  <button
+                    onClick={() => setIsDepositModalOpen(true)}
+                    className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer outline-none"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>+ Setor Panen</span>
+                  </button>
+                  <button
+                    onClick={handleFarmerWithdraw}
+                    className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-white border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer outline-none"
+                  >
+                    <Wallet className="w-3.5 h-3.5" />
+                    <span>Tarik Saldo</span>
+                  </button>
+                </div>
               </div>
-              <p className="text-xs text-[#6d7588] mt-0.5">
-                {producerType === 'petani'
-                  ? 'Simulasi perbandingan pendapatan bersih panen cabai/sayur di PanenHub vs tengkulak keliling desa.'
-                  : 'Simulasi perbandingan pendapatan bersih hasil tangkapan ikan di PanenHub vs tengkulak dermaga pelabuhan.'}
-              </p>
             </div>
 
-            {/* Quick Weight Chips */}
-            <div className="flex items-center gap-1.5 self-start sm:self-center">
-              <span className="text-xs text-[#6d7588] mr-1 hidden sm:inline">Pilih Bobot:</span>
-              {[25, 50, 100, 200].map((w) => (
-                <button
-                  key={w}
-                  onClick={() => setSimWeightKg(w)}
-                  className={`px-2.5 py-1 rounded-md text-xs transition cursor-pointer outline-none ${
-                    simWeightKg === w
-                      ? 'bg-[#03ac0e] text-white shadow-2xs font-semibold'
-                      : 'bg-[#f3f4f5] text-[#6d7588] hover:bg-slate-200'
-                  }`}
-                >
-                  {w} kg
-                </button>
-              ))}
+            {/* Ringkasan Operasional Hari Ini */}
+            <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#f3f4f5]">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-[#03ac0e]" />
+                  <h2 className="text-xs sm:text-sm font-bold text-[#212121]">Ringkasan Operasional Hari Ini</h2>
+                </div>
+                <span className="text-[11px] text-[#6d7588] hidden sm:inline">Sensor Timbangan & Cold Chain Aktif</span>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-1">
+                {/* Col 1 */}
+                <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+                  <span className="text-[11px] text-[#6d7588] block">Setoran Hari Ini</span>
+                  <span className="text-xl font-bold text-[#212121] block">
+                    {producerType === 'petani' ? '120 Kg' : '95 Kg'}
+                  </span>
+                  <span className="text-[10px] text-[#03ac0e] font-semibold block">
+                    {producerType === 'petani' ? '✓ Lolos Sensor QC Grade A' : '✓ Standar Ekspor Sashimi'}
+                  </span>
+                </div>
+
+                {/* Col 2 */}
+                <div className="p-3 rounded-lg bg-[#ebf5e9]/70 border border-[#03ac0e]/20 space-y-1">
+                  <span className="text-[11px] text-[#6d7588] block">Saldo Siap Tarik (T+0)</span>
+                  <span className="text-xl font-bold text-[#03ac0e] block">
+                    Rp {farmerWalletBalance.toLocaleString('id-ID')}
+                  </span>
+                  <button
+                    onClick={handleFarmerWithdraw}
+                    className="text-[10px] text-[#03ac0e] font-bold hover:underline block cursor-pointer outline-none"
+                  >
+                    Tarik ke Rekening →
+                  </button>
+                </div>
+
+                {/* Col 3 */}
+                <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+                  <span className="text-[11px] text-[#6d7588] block">
+                    {producerType === 'petani' ? 'Suhu Cold Pod' : 'Suhu Slurry Ice'}
+                  </span>
+                  <span className="text-xl font-bold text-[#212121] block">
+                    {producerType === 'petani' ? '2.4°C' : '0.8°C'}
+                  </span>
+                  <span className="text-[10px] text-[#03ac0e] font-semibold block">
+                    {producerType === 'petani' ? 'Optimal Bertenaga Surya' : 'Super Chilled Dermaga'}
+                  </span>
+                </div>
+
+                {/* Col 4 */}
+                <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+                  <span className="text-[11px] text-[#6d7588] block">Kapasitas Pod</span>
+                  <span className="text-xl font-bold text-[#212121] block">
+                    {producerType === 'petani' ? '84%' : '76%'}
+                  </span>
+                  <span className="text-[10px] text-[#6d7588] block">
+                    {producerType === 'petani' ? 'Slot sisa 35 kg' : 'Slot sisa 45 kg'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Access Menu Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              <div
+                onClick={() => {
+                  setProducerTab('kuota');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="p-4 rounded-xl bg-white border border-[#e5e7e9] hover:border-[#03ac0e] hover:shadow-xs transition cursor-pointer space-y-2 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-lg bg-[#ebf5e9] text-[#03ac0e] flex items-center justify-center text-lg">
+                    🎯
+                  </div>
+                  <span className="text-xs font-semibold text-[#03ac0e] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    Buka <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#212121]">Kuota Permintaan Masuk</h3>
+                  <p className="text-xs text-[#6d7588] mt-0.5">
+                    {producerType === 'petani'
+                      ? '4 komoditas sayur siap setor dengan jaminan kuota pesanan konsumen.'
+                      : '4 komoditas ikan segar siap setor dengan standar harga pasti.'}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                onClick={() => {
+                  setProducerTab('setor');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="p-4 rounded-xl bg-white border border-[#e5e7e9] hover:border-[#03ac0e] hover:shadow-xs transition cursor-pointer space-y-2 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                    📦
+                  </div>
+                  <span className="text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    Buka <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#212121]">Setoran & Riwayat Lot QC</h3>
+                  <p className="text-xs text-[#6d7588] mt-0.5">
+                    Input hasil timbangan digital dan cek status suhu sensor cold chain pasca-panen.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                onClick={() => {
+                  setProducerTab('keuangan');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="p-4 rounded-xl bg-white border border-[#e5e7e9] hover:border-[#03ac0e] hover:shadow-xs transition cursor-pointer space-y-2 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                    💰
+                  </div>
+                  <span className="text-xs font-semibold text-amber-600 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    Buka <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#212121]">Keuangan & Simulasi Margin</h3>
+                  <p className="text-xs text-[#6d7588] mt-0.5">
+                    Kalkulator transparansi pendapatan bersih tanpa potongan sepihak ijon.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Cold Pod Telemetry Details */}
+            <div className="p-4 rounded-xl bg-slate-50 border border-[#e5e7e9] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#6d7588]">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>
+                  Lokasi Hub: <strong className="text-[#212121]">{producerType === 'petani' ? 'Cold Pod Desa Bumiaji #01' : 'Slurry Ice Hub Muncar #02'}</strong>
+                </span>
+                <span className="hidden sm:inline">•</span>
+                <span className="hidden sm:inline">Jadwal Angkut Cold Van: <strong className="text-[#212121]">05:30 WIB Subuh</strong></span>
+              </div>
+              <div className="text-[#03ac0e] font-semibold">
+                ✓ IoT Telemetri Berjalan Normal
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Weight Slider */}
-          <div className="p-3 bg-[#f8f9fa] rounded-lg border border-[#e5e7e9] flex items-center gap-4">
-            <span className="text-xs text-[#6d7588] whitespace-nowrap">Geser Bobot:</span>
-            <input
-              type="range"
-              min="10"
-              max="300"
-              step="5"
-              value={simWeightKg}
-              onChange={(e) => setSimWeightKg(Number(e.target.value))}
-              className="w-full accent-[#03ac0e] cursor-pointer"
-            />
-            <span className="text-xs font-bold text-[#03ac0e] bg-white px-2.5 py-1 rounded border border-[#03ac0e]/30 whitespace-nowrap shadow-2xs">
-              {simWeightKg} Kg
-            </span>
-          </div>
+        {/* SUBPAGE 2: KUOTA PERMINTAAN MASUK */}
+        {producerTab === 'kuota' && (
+          <div id="kuota-section" className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4 animate-fadeIn">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#e5e7e9]">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm sm:text-base font-bold text-[#212121]">
+                    🎯 Alokasi Kuota Permintaan Masuk
+                  </h2>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] text-[10px] font-bold">
+                    Sinkron Pesanan Konsumen
+                  </span>
+                </div>
+                <p className="text-xs text-[#6d7588] mt-0.5">
+                  Kebutuhan panen segar dari ribuan konsumen PanenHub yang siap Anda setor langsung hari ini.
+                </p>
+              </div>
 
-          {/* Clean Side-by-Side Financial Comparison Table */}
-          <div className="overflow-x-auto rounded-lg border border-[#e5e7e9]">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="bg-[#f8f9fa] border-b border-[#e5e7e9] text-[#212121]">
-                  <th className="py-2.5 px-3.5 font-semibold">Indikator Transaksi</th>
-                  <th className="py-2.5 px-3.5 font-semibold text-slate-700">
-                    {producerType === 'petani' ? 'Tengkulak / Sistem Ijon' : 'Tengkulak Pengepul Dermaga'}
-                  </th>
-                  <th className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/50">
-                    {producerType === 'petani' ? 'PanenHub Fair Trade & Cold Pod' : 'PanenHub Fair Trade & Ice Pod'}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e5e7e9]">
-                <tr>
-                  <td className="py-2.5 px-3.5 font-medium text-[#212121]">Harga Beli Komoditas</td>
-                  <td className="py-2.5 px-3.5 text-[#6d7588]">
-                    {producerType === 'petani' ? 'Rp 16.000 / kg' : 'Rp 25.000 / kg'}
-                  </td>
-                  <td className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/20">
-                    {producerType === 'petani'
-                      ? 'Rp 24.500 / kg (+53.1%)'
-                      : 'Rp 38.000 / kg (+52.0%)'}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2.5 px-3.5 font-medium text-[#212121]">Potongan Tara / Susut</td>
-                  <td className="py-2.5 px-3.5 text-red-600">
-                    {producerType === 'petani' ? 'Dipotong sepihak 10% – 15%' : 'Dipotong air/es 15% – 20% sepihak'}
-                  </td>
-                  <td className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/20">
-                    {producerType === 'petani'
-                      ? '0% Potongan (Timbangan IoT Presisi)'
-                      : '0% Potongan (Timbangan Slurry Digital IoT)'}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2.5 px-3.5 font-medium text-[#212121]">Tempo Pembayaran</td>
-                  <td className="py-2.5 px-3.5 text-[#6d7588]">
-                    {producerType === 'petani' ? 'Tertahan 14 – 30 hari (nota kasbon)' : 'Tertahan berhari-hari menunggu lelang'}
-                  </td>
-                  <td className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/20">
-                    {producerType === 'petani' ? 'Cair Instan T+0 Hari Ini Juga' : 'Cair Instan T+0 saat kapal merapat'}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2.5 px-3.5 font-medium text-[#212121]">Penyimpanan Pasca Panen</td>
-                  <td className="py-2.5 px-3.5 text-[#6d7588]">
-                    {producerType === 'petani'
-                      ? 'Suhu ruang (risiko busuk ditanggung petani)'
-                      : 'Es balok hancur (mudah susut & meleleh)'}
-                  </td>
-                  <td className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/20">
-                    {producerType === 'petani'
-                      ? 'Cold Pod Desa 0–4°C Bertenaga Surya'
-                      : 'Slurry IcePod Muncar 0.8°C Standar Sashimi'}
-                  </td>
-                </tr>
-                <tr className="bg-[#f8f9fa] font-bold">
-                  <td className="py-3 px-3.5 text-[#212121]">Total Pendapatan Bersih</td>
-                  <td className="py-3 px-3.5 text-slate-700">
-                    Rp {(simWeightKg * (producerType === 'petani' ? 16000 : 25000)).toLocaleString('id-ID')}
-                  </td>
-                  <td className="py-3 px-3.5 text-[#03ac0e] text-sm bg-emerald-100/60">
-                    Rp {(simWeightKg * (producerType === 'petani' ? 24500 : 38000)).toLocaleString('id-ID')}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Single Elegant Green Summary Banner */}
-          <div className="p-3.5 rounded-xl bg-[#ebf5e9] border border-[#03ac0e]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="space-y-0.5">
-              <span className="text-xs font-bold text-[#03ac0e] flex items-center gap-1.5">
-                <Banknote className="w-4 h-4" />
-                {producerType === 'petani'
-                  ? 'Nilai Tambah Bersih yang Masuk ke Kantong Petani:'
-                  : 'Nilai Tambah Bersih yang Masuk ke Kantong Nelayan:'}
-              </span>
-              <p className="text-[11px] text-[#4b5563]">
-                {producerType === 'petani'
-                  ? 'Selisih margin Rp 8.500/kg sepenuhnya dinikmati petani lokal tanpa perantara ijon.'
-                  : 'Selisih margin Rp 13.000/kg sepenuhnya dinikmati nelayan lokal tanpa potongan sepihak.'}
-              </p>
+              <button
+                onClick={() => setIsDepositModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition self-start sm:self-center cursor-pointer outline-none flex items-center gap-1.5 shadow-2xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Setor Komoditas</span>
+              </button>
             </div>
-            <div className="text-left sm:text-right shrink-0">
-              <span className="text-lg font-black text-[#03ac0e] block">
-                +Rp {(simWeightKg * (producerType === 'petani' ? (24500 - 16000) : (38000 - 25000))).toLocaleString('id-ID')}
-              </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#03ac0e] text-white inline-block">
-                {producerType === 'petani' ? '+53.1% Lebih Menguntungkan' : '+52.0% Lebih Menguntungkan'}
-              </span>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {(producerType === 'petani'
+                ? [
+                    {
+                      name: 'Cabai Rawit Merah Super',
+                      origin: 'Bumiaji, Batu',
+                      quota: 150,
+                      fulfilled: 115,
+                      panenHubPrice: 24500,
+                      tengkulakPrice: 16000,
+                      unit: 'kg',
+                      icon: '🌶️',
+                      status: 'Butuh 35 kg lagi'
+                    },
+                    {
+                      name: 'Tomat Beef Hidroponik',
+                      origin: 'Pujon, Malang',
+                      quota: 200,
+                      fulfilled: 180,
+                      panenHubPrice: 14000,
+                      tengkulakPrice: 8000,
+                      unit: 'kg',
+                      icon: '🍅',
+                      status: 'Butuh 20 kg lagi'
+                    },
+                    {
+                      name: 'Selada Romaine Bromo',
+                      origin: 'Batu (1.100 mdpl)',
+                      quota: 80,
+                      fulfilled: 80,
+                      panenHubPrice: 18000,
+                      tengkulakPrice: 11000,
+                      unit: 'kg',
+                      icon: '🥬',
+                      status: '✅ 100% Kuota Terpenuhi'
+                    },
+                    {
+                      name: 'Wortel Baby Organik',
+                      origin: 'Bumiaji, Batu',
+                      quota: 120,
+                      fulfilled: 95,
+                      panenHubPrice: 16000,
+                      tengkulakPrice: 9500,
+                      unit: 'kg',
+                      icon: '🥕',
+                      status: 'Butuh 25 kg lagi'
+                    }
+                  ]
+                : [
+                    {
+                      name: 'Ikan Tuna Sirip Kuning',
+                      origin: 'Perairan Selat Bali',
+                      quota: 120,
+                      fulfilled: 85,
+                      panenHubPrice: 38000,
+                      tengkulakPrice: 25000,
+                      unit: 'kg',
+                      icon: '🐟',
+                      status: 'Butuh 35 kg lagi'
+                    },
+                    {
+                      name: 'Udang Vaname Pesisir Super',
+                      origin: 'Tambak Muncar, Banyuwangi',
+                      quota: 100,
+                      fulfilled: 90,
+                      panenHubPrice: 45000,
+                      tengkulakPrice: 30000,
+                      unit: 'kg',
+                      icon: '🦐',
+                      status: 'Butuh 10 kg lagi'
+                    },
+                    {
+                      name: 'Ikan Cakalang Segar Muncar',
+                      origin: 'Teluk Pangpang',
+                      quota: 150,
+                      fulfilled: 120,
+                      panenHubPrice: 28000,
+                      tengkulakPrice: 18000,
+                      unit: 'kg',
+                      icon: '🐟',
+                      status: 'Butuh 30 kg lagi'
+                    },
+                    {
+                      name: 'Fillet Kakap Merah Segar',
+                      origin: 'Pesisir Grajagan',
+                      quota: 80,
+                      fulfilled: 80,
+                      panenHubPrice: 52000,
+                      tengkulakPrice: 35000,
+                      unit: 'kg',
+                      icon: '🐠',
+                      status: '✅ 100% Kuota Terpenuhi'
+                    }
+                  ]
+              ).map((item, idx) => {
+                const pct = Math.min(100, Math.round((item.fulfilled / item.quota) * 100));
+                const isFull = pct === 100;
+                return (
+                  <div key={idx} className="p-3.5 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9] space-y-3 flex flex-col justify-between">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xl">{item.icon}</span>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          isFull ? 'bg-emerald-100 text-[#03ac0e]' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {item.status}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-xs text-[#212121] leading-tight">{item.name}</h4>
+                        <span className="text-[10px] text-[#8d96aa] block mt-0.5">{item.origin}</span>
+                      </div>
+                      
+                      <div className="space-y-1 pt-1">
+                        <div className="flex justify-between text-[11px] text-[#6d7588]">
+                          <span>Terkumpul: <strong>{item.fulfilled} {item.unit}</strong></span>
+                          <span>Target: {item.quota} {item.unit}</span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500 bg-[#03ac0e]"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#e5e7e9] text-xs space-y-1">
+                      <div className="flex justify-between text-[#212121]">
+                        <span className="text-[#6d7588]">Harga PanenHub:</span>
+                        <strong className="text-[#03ac0e]">Rp{item.panenHubPrice.toLocaleString('id-ID')}</strong>
+                      </div>
+                      <div className="flex justify-between text-[11px] text-[#8d96aa]">
+                        <span>Harga Tengkulak:</span>
+                        <span className="line-through">Rp{item.tengkulakPrice.toLocaleString('id-ID')}</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setDepositCommodity(item.name);
+                          setIsDepositModalOpen(true);
+                        }}
+                        className="w-full mt-1 py-1.5 rounded-md bg-white hover:bg-slate-100 border border-[#e5e7e9] text-xs font-medium text-[#212121] transition outline-none cursor-pointer"
+                      >
+                        + Setor Batch
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Riwayat Penerimaan di Cold Pod Desa (Tokopedia Seller Standard Table) */}
-        <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-[#e5e7e9]">
-            <h3 className="font-semibold text-xs sm:text-sm text-[#212121]">
-              {producerType === 'petani'
-                ? 'Riwayat Setoran Masuk Cold Pod Desa (Timbangan Digital Hari Ini)'
-                : 'Riwayat Setoran Masuk Slurry IcePod Muncar (Timbangan Digital Hari Ini)'}
-            </h3>
-            <span className="text-[11px] text-[#6d7588]">Tersinkronisasi Sensor Timbangan IoT</span>
-          </div>
+        {/* SUBPAGE 3: SETORAN & QC RIWAYAT */}
+        {producerTab === 'setor' && (
+          <div className="space-y-4 animate-fadeIn">
+            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm sm:text-base font-bold text-[#212121]">
+                  📦 Setoran Komoditas & Timbangan IoT
+                </h2>
+                <p className="text-xs text-[#6d7588] mt-0.5">
+                  Timbang komoditas di hub terdekat, sensor digital akan otomatis mencatat berat dan suhu masuk.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsDepositModalOpen(true)}
+                className="px-4 py-2 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer outline-none"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Setor Hasil Panen Baru</span>
+              </button>
+            </div>
 
-          <div className="overflow-x-auto rounded-lg border border-[#e5e7e9]">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="bg-[#f8f9fa] border-b border-[#e5e7e9] text-[#6d7588]">
-                  <th className="py-2.5 px-3 font-medium">No. Lot</th>
-                  <th className="py-2.5 px-3 font-medium">Komoditas</th>
-                  <th className="py-2.5 px-3 font-medium">Waktu Timbang</th>
-                  <th className="py-2.5 px-3 font-medium">Berat (Kg)</th>
-                  <th className="py-2.5 px-3 font-medium">Suhu Masuk</th>
-                  <th className="py-2.5 px-3 font-medium">Status QC</th>
-                  <th className="py-2.5 px-3 font-medium text-right">Nilai Diterima (T+0)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#f3f4f5]">
-                {producerType === 'petani' ? (
-                  <>
-                    <tr className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-8821</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">Cabai Rawit Merah Super</td>
-                      <td className="py-2.5 px-3 text-[#6d7588]">06:15 WIB</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">50.0 kg</td>
-                      <td className="py-2.5 px-3 text-[#03ac0e] font-medium">2.6°C</td>
-                      <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A</span></td>
-                      <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.225.000</td>
+            {/* Riwayat Penerimaan di Cold Pod Desa */}
+            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#e5e7e9]">
+                <h3 className="font-semibold text-xs sm:text-sm text-[#212121]">
+                  {producerType === 'petani'
+                    ? 'Riwayat Setoran Masuk Cold Pod Desa (Timbangan Digital Hari Ini)'
+                    : 'Riwayat Setoran Masuk Slurry IcePod Muncar (Timbangan Digital Hari Ini)'}
+                </h3>
+                <span className="text-[11px] text-[#6d7588]">Tersinkronisasi Sensor Timbangan IoT</span>
+              </div>
+
+              <div className="overflow-x-auto rounded-lg border border-[#e5e7e9]">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="bg-[#f8f9fa] border-b border-[#e5e7e9] text-[#6d7588]">
+                      <th className="py-2.5 px-3 font-medium">No. Lot</th>
+                      <th className="py-2.5 px-3 font-medium">Komoditas</th>
+                      <th className="py-2.5 px-3 font-medium">Waktu Timbang</th>
+                      <th className="py-2.5 px-3 font-medium">Berat (Kg)</th>
+                      <th className="py-2.5 px-3 font-medium">Suhu Masuk</th>
+                      <th className="py-2.5 px-3 font-medium">Status QC</th>
+                      <th className="py-2.5 px-3 font-medium text-right">Nilai Diterima (T+0)</th>
                     </tr>
-                    <tr className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-8820</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">Tomat Beef Hidroponik</td>
-                      <td className="py-2.5 px-3 text-[#6d7588]">05:40 WIB</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">70.0 kg</td>
-                      <td className="py-2.5 px-3 text-[#03ac0e] font-medium">3.1°C</td>
-                      <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A</span></td>
-                      <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 980.000</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-8818</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">Selada Romaine Bromo</td>
-                      <td className="py-2.5 px-3 text-[#6d7588]">05:15 WIB</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">30.0 kg</td>
-                      <td className="py-2.5 px-3 text-[#03ac0e] font-medium">2.8°C</td>
-                      <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A Super</span></td>
-                      <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 540.000</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-8816</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">Wortel Baby Organik</td>
-                      <td className="py-2.5 px-3 text-[#6d7588]">Kemarin 17:30 WIB</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">45.0 kg</td>
-                      <td className="py-2.5 px-3 text-[#03ac0e] font-medium">2.5°C</td>
-                      <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A</span></td>
-                      <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 720.000</td>
-                    </tr>
-                  </>
-                ) : (
-                  <>
-                    <tr className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-9932</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">Ikan Tuna Sirip Kuning</td>
-                      <td className="py-2.5 px-3 text-[#6d7588]">05:10 WIB</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">40.0 kg</td>
-                      <td className="py-2.5 px-3 text-blue-600 font-medium">0.8°C</td>
-                      <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-semibold">Sashimi Grade A</span></td>
-                      <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.520.000</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-9931</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">Udang Vaname Pesisir Super</td>
-                      <td className="py-2.5 px-3 text-[#6d7588]">04:45 WIB</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">25.0 kg</td>
-                      <td className="py-2.5 px-3 text-blue-600 font-medium">0.6°C</td>
-                      <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-semibold">Grade Ekspor</span></td>
-                      <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.125.000</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-9929</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">Ikan Cakalang Segar Muncar</td>
-                      <td className="py-2.5 px-3 text-[#6d7588]">04:15 WIB</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">50.0 kg</td>
-                      <td className="py-2.5 px-3 text-blue-600 font-medium">0.7°C</td>
-                      <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A</span></td>
-                      <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.400.000</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-9927</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">Fillet Kakap Merah Segar</td>
-                      <td className="py-2.5 px-3 text-[#6d7588]">Kemarin 18:20 WIB</td>
-                      <td className="py-2.5 px-3 font-semibold text-[#212121]">20.0 kg</td>
-                      <td className="py-2.5 px-3 text-blue-600 font-medium">0.5°C</td>
-                      <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-semibold">Grade A+</span></td>
-                      <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.040.000</td>
-                    </tr>
-                  </>
-                )}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className="divide-y divide-[#f3f4f5]">
+                    {producerType === 'petani' ? (
+                      <>
+                        <tr className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-8821</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">Cabai Rawit Merah Super</td>
+                          <td className="py-2.5 px-3 text-[#6d7588]">06:15 WIB</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">50.0 kg</td>
+                          <td className="py-2.5 px-3 text-[#03ac0e] font-medium">2.6°C</td>
+                          <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A</span></td>
+                          <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.225.000</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-8820</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">Tomat Beef Hidroponik</td>
+                          <td className="py-2.5 px-3 text-[#6d7588]">05:40 WIB</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">70.0 kg</td>
+                          <td className="py-2.5 px-3 text-[#03ac0e] font-medium">3.1°C</td>
+                          <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A</span></td>
+                          <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 980.000</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-8818</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">Selada Romaine Bromo</td>
+                          <td className="py-2.5 px-3 text-[#6d7588]">05:15 WIB</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">30.0 kg</td>
+                          <td className="py-2.5 px-3 text-[#03ac0e] font-medium">2.8°C</td>
+                          <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A Super</span></td>
+                          <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 540.000</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-8816</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">Wortel Baby Organik</td>
+                          <td className="py-2.5 px-3 text-[#6d7588]">Kemarin 17:30 WIB</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">45.0 kg</td>
+                          <td className="py-2.5 px-3 text-[#03ac0e] font-medium">2.5°C</td>
+                          <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A</span></td>
+                          <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 720.000</td>
+                        </tr>
+                      </>
+                    ) : (
+                      <>
+                        <tr className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-9932</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">Ikan Tuna Sirip Kuning</td>
+                          <td className="py-2.5 px-3 text-[#6d7588]">05:10 WIB</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">40.0 kg</td>
+                          <td className="py-2.5 px-3 text-blue-600 font-medium">0.8°C</td>
+                          <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-semibold">Sashimi Grade A</span></td>
+                          <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.520.000</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-9931</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">Udang Vaname Pesisir Super</td>
+                          <td className="py-2.5 px-3 text-[#6d7588]">04:45 WIB</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">25.0 kg</td>
+                          <td className="py-2.5 px-3 text-blue-600 font-medium">0.6°C</td>
+                          <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-semibold">Grade Ekspor</span></td>
+                          <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.125.000</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-9929</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">Ikan Cakalang Segar Muncar</td>
+                          <td className="py-2.5 px-3 text-[#6d7588]">04:15 WIB</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">50.0 kg</td>
+                          <td className="py-2.5 px-3 text-blue-600 font-medium">0.7°C</td>
+                          <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-emerald-100 text-[#03ac0e] text-[10px] font-semibold">Grade A</span></td>
+                          <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.400.000</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-[#6d7588]">#LOT-9927</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">Fillet Kakap Merah Segar</td>
+                          <td className="py-2.5 px-3 text-[#6d7588]">Kemarin 18:20 WIB</td>
+                          <td className="py-2.5 px-3 font-semibold text-[#212121]">20.0 kg</td>
+                          <td className="py-2.5 px-3 text-blue-600 font-medium">0.5°C</td>
+                          <td className="py-2.5 px-3"><span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-semibold">Grade A+</span></td>
+                          <td className="py-2.5 px-3 font-bold text-right text-[#03ac0e]">Rp 1.040.000</td>
+                        </tr>
+                      </>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* SUBPAGE 4: KEUANGAN & SIMULASI MARGIN */}
+        {producerTab === 'keuangan' && (
+          <div className="space-y-4 animate-fadeIn">
+            {/* Wallet Balance Card */}
+            <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <span className="text-xs text-[#6d7588] font-medium">Saldo Dompet T+0 (Siap Tarik)</span>
+                <span className="text-2xl sm:text-3xl font-black text-[#03ac0e] block">
+                  Rp {farmerWalletBalance.toLocaleString('id-ID')}
+                </span>
+                <p className="text-xs text-[#6d7588]">
+                  Pencairan instan tanpa potongan ijon. Rekening tujuan: BRI (••••7812) a.n {producerType === 'petani' ? 'Sugeng Widodo' : 'H. Slamet'}
+                </p>
+              </div>
+              <button
+                onClick={handleFarmerWithdraw}
+                className="px-5 py-2.5 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white font-semibold text-xs transition shadow-2xs cursor-pointer outline-none flex items-center justify-center gap-2 self-start sm:self-center"
+              >
+                <Wallet className="w-4 h-4" />
+                <span>Tarik Saldo ke Rekening</span>
+              </button>
+            </div>
+
+            {/* Financial Comparison: Kalkulator Nilai Tambah vs Sistem Ijon */}
+            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#e5e7e9]">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Scale className="w-4 h-4 text-[#03ac0e]" />
+                    <h3 className="text-sm sm:text-base font-bold text-[#212121]">
+                      {producerType === 'petani'
+                        ? 'Kalkulator Transparansi & Nilai Tambah vs Sistem Ijon Desa'
+                        : 'Kalkulator Transparansi & Nilai Tambah vs Pengepul Dermaga'}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-[#6d7588] mt-0.5">
+                    {producerType === 'petani'
+                      ? 'Simulasi perbandingan pendapatan bersih panen cabai/sayur di PanenHub vs tengkulak keliling desa.'
+                      : 'Simulasi perbandingan pendapatan bersih hasil tangkapan ikan di PanenHub vs tengkulak dermaga pelabuhan.'}
+                  </p>
+                </div>
+
+                {/* Quick Weight Chips */}
+                <div className="flex items-center gap-1.5 self-start sm:self-center">
+                  <span className="text-xs text-[#6d7588] mr-1 hidden sm:inline">Pilih Bobot:</span>
+                  {[25, 50, 100, 200].map((w) => (
+                    <button
+                      key={w}
+                      onClick={() => setSimWeightKg(w)}
+                      className={`px-2.5 py-1 rounded-md text-xs transition cursor-pointer outline-none ${
+                        simWeightKg === w
+                          ? 'bg-[#03ac0e] text-white shadow-2xs font-semibold'
+                          : 'bg-[#f3f4f5] text-[#6d7588] hover:bg-slate-200'
+                      }`}
+                    >
+                      {w} kg
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Weight Slider */}
+              <div className="p-3 bg-[#f8f9fa] rounded-lg border border-[#e5e7e9] flex items-center gap-4">
+                <span className="text-xs text-[#6d7588] whitespace-nowrap">Geser Bobot:</span>
+                <input
+                  type="range"
+                  min="10"
+                  max="300"
+                  step="5"
+                  value={simWeightKg}
+                  onChange={(e) => setSimWeightKg(Number(e.target.value))}
+                  className="w-full accent-[#03ac0e] cursor-pointer"
+                />
+                <span className="text-xs font-bold text-[#03ac0e] bg-white px-2.5 py-1 rounded border border-[#03ac0e]/30 whitespace-nowrap shadow-2xs">
+                  {simWeightKg} Kg
+                </span>
+              </div>
+
+              {/* Clean Side-by-Side Financial Comparison Table */}
+              <div className="overflow-x-auto rounded-lg border border-[#e5e7e9]">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="bg-[#f8f9fa] border-b border-[#e5e7e9] text-[#212121]">
+                      <th className="py-2.5 px-3.5 font-semibold">Indikator Transaksi</th>
+                      <th className="py-2.5 px-3.5 font-semibold text-slate-700">
+                        {producerType === 'petani' ? 'Tengkulak / Sistem Ijon' : 'Tengkulak Pengepul Dermaga'}
+                      </th>
+                      <th className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/50">
+                        {producerType === 'petani' ? 'PanenHub Fair Trade & Cold Pod' : 'PanenHub Fair Trade & Ice Pod'}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#e5e7e9]">
+                    <tr>
+                      <td className="py-2.5 px-3.5 font-medium text-[#212121]">Harga Beli Komoditas</td>
+                      <td className="py-2.5 px-3.5 text-[#6d7588]">
+                        {producerType === 'petani' ? 'Rp 16.000 / kg' : 'Rp 25.000 / kg'}
+                      </td>
+                      <td className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/20">
+                        {producerType === 'petani'
+                          ? 'Rp 24.500 / kg (+53.1%)'
+                          : 'Rp 38.000 / kg (+52.0%)'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-3.5 font-medium text-[#212121]">Potongan Tara / Susut</td>
+                      <td className="py-2.5 px-3.5 text-red-600">
+                        {producerType === 'petani' ? 'Dipotong sepihak 10% – 15%' : 'Dipotong air/es 15% – 20% sepihak'}
+                      </td>
+                      <td className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/20">
+                        {producerType === 'petani'
+                          ? '0% Potongan (Timbangan IoT Presisi)'
+                          : '0% Potongan (Timbangan Slurry Digital IoT)'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-3.5 font-medium text-[#212121]">Tempo Pembayaran</td>
+                      <td className="py-2.5 px-3.5 text-[#6d7588]">
+                        {producerType === 'petani' ? 'Tertahan 14 – 30 hari (nota kasbon)' : 'Tertahan berhari-hari menunggu lelang'}
+                      </td>
+                      <td className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/20">
+                        {producerType === 'petani' ? 'Cair Instan T+0 Hari Ini Juga' : 'Cair Instan T+0 saat kapal merapat'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-3.5 font-medium text-[#212121]">Penyimpanan Pasca Panen</td>
+                      <td className="py-2.5 px-3.5 text-[#6d7588]">
+                        {producerType === 'petani'
+                          ? 'Suhu ruang (risiko busuk ditanggung petani)'
+                          : 'Es balok hancur (mudah susut & meleleh)'}
+                      </td>
+                      <td className="py-2.5 px-3.5 font-semibold text-[#03ac0e] bg-emerald-50/20">
+                        {producerType === 'petani'
+                          ? 'Cold Pod Desa 0–4°C Bertenaga Surya'
+                          : 'Slurry IcePod Muncar 0.8°C Standar Sashimi'}
+                      </td>
+                    </tr>
+                    <tr className="bg-[#f8f9fa] font-bold">
+                      <td className="py-3 px-3.5 text-[#212121]">Total Pendapatan Bersih</td>
+                      <td className="py-3 px-3.5 text-slate-700">
+                        Rp {(simWeightKg * (producerType === 'petani' ? 16000 : 25000)).toLocaleString('id-ID')}
+                      </td>
+                      <td className="py-3 px-3.5 text-[#03ac0e] text-sm bg-emerald-100/60">
+                        Rp {(simWeightKg * (producerType === 'petani' ? 24500 : 38000)).toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Single Elegant Green Summary Banner */}
+              <div className="p-3.5 rounded-xl bg-[#ebf5e9] border border-[#03ac0e]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-bold text-[#03ac0e] flex items-center gap-1.5">
+                    <Banknote className="w-4 h-4" />
+                    {producerType === 'petani'
+                      ? 'Nilai Tambah Bersih yang Masuk ke Kantong Petani:'
+                      : 'Nilai Tambah Bersih yang Masuk ke Kantong Nelayan:'}
+                  </span>
+                  <p className="text-[11px] text-[#4b5563]">
+                    {producerType === 'petani'
+                      ? 'Selisih margin Rp 8.500/kg sepenuhnya dinikmati petani lokal tanpa perantara ijon.'
+                      : 'Selisih margin Rp 13.000/kg sepenuhnya dinikmati nelayan lokal tanpa potongan sepihak.'}
+                  </p>
+                </div>
+                <div className="text-left sm:text-right shrink-0">
+                  <span className="text-lg font-black text-[#03ac0e] block">
+                    +Rp {(simWeightKg * (producerType === 'petani' ? (24500 - 16000) : (38000 - 25000))).toLocaleString('id-ID')}
+                  </span>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#03ac0e] text-white inline-block">
+                    {producerType === 'petani' ? '+53.1% Lebih Menguntungkan' : '+52.0% Lebih Menguntungkan'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     )}
@@ -2396,226 +2590,495 @@ export default function PanenHubTokopediaApp() {
     {/* ══════════════════════════════════════════════════════════════ */}
     {/* POV 3: MITRA WARUNG (TITIK AMBIL TETANGGA & KOMISI TUNAI)      */}
     {/* ══════════════════════════════════════════════════════════════ */}
+    {/* ══════════════════════════════════════════════════════════════ */}
+    {/* POV 3: MITRA WARUNG (TITIK AMBIL TETANGGA & KOMISI TUNAI)      */}
+    {/* ══════════════════════════════════════════════════════════════ */}
     {activePov === 'warung' && (
       <div className="space-y-4 sm:space-y-5 animate-fadeIn">
         
-        {/* Tokopedia Mitra Store Overview Card */}
-        <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-[#ebf5e9] text-[#03ac0e] flex items-center justify-center text-xl shrink-0 border border-[#03ac0e]/20">
-                🏪
+        {/* SUBPAGE 1: DASHBOARD / RINGKASAN WARUNG */}
+        {warungTab === 'dashboard' && (
+          <div className="space-y-4 sm:space-y-5 animate-fadeIn">
+            {/* Tokopedia Mitra Store Overview Card */}
+            <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl bg-[#ebf5e9] text-[#03ac0e] flex items-center justify-center text-xl shrink-0 border border-[#03ac0e]/20">
+                    🏪
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="text-base sm:text-lg font-bold text-[#212121] leading-tight">
+                        Warung Bu Siti
+                      </h1>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] inline-flex items-center gap-1 border border-emerald-300">
+                        <CheckCircle2 className="w-3 h-3" /> Mitra Resmi #042
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-white font-medium">
+                        Aktif
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#6d7588] mt-0.5 truncate">
+                      Tebet Timur Raya No. 14, Jaksel • Cold Van Drop 06:45 WIB
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1 sm:pt-0">
+                  <button
+                    onClick={() => {
+                      setWarungTab('validasi');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer outline-none"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>Validasi PIN</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setWarungTab('komisi');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-white border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer outline-none"
+                  >
+                    <Wallet className="w-3.5 h-3.5" />
+                    <span>Saldo Komisi</span>
+                  </button>
+                </div>
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-base sm:text-lg font-bold text-[#212121] leading-tight">
-                    Warung Bu Siti
-                  </h1>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-[#03ac0e] inline-flex items-center gap-1 border border-emerald-300">
-                    <CheckCircle2 className="w-3 h-3" /> Mitra Resmi #042
+            </div>
+
+            {/* 4 Stat Columns Tokopedia Mitra */}
+            <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#f3f4f5]">
+                <div className="flex items-center gap-2">
+                  <Store className="w-4 h-4 text-[#03ac0e]" />
+                  <h2 className="text-xs sm:text-sm font-bold text-[#212121]">Status Operasional Drop-Point</h2>
+                </div>
+                <span className="text-[11px] text-[#6d7588] hidden sm:inline">Update Real-time</span>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-1">
+                <div
+                  onClick={() => {
+                    setWarungTab('rak');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1 hover:border-[#03ac0e] transition cursor-pointer"
+                >
+                  <span className="text-[11px] text-[#6d7588] block">Paket Siap di Rak</span>
+                  <span className="text-xl font-bold text-[#212121] block">
+                    {orders.filter(o => o.status === 'ready').length} Paket
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-white font-medium">
-                    Aktif
+                  <span className="text-[10px] text-[#03ac0e] font-semibold block">Menunggu diambil warga →</span>
+                </div>
+
+                <div
+                  onClick={() => {
+                    setWarungTab('rak');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1 hover:border-[#03ac0e] transition cursor-pointer"
+                >
+                  <span className="text-[11px] text-[#6d7588] block">Paket Selesai</span>
+                  <span className="text-xl font-bold text-[#03ac0e] block">
+                    {orders.filter(o => o.status === 'collected').length} Paket
+                  </span>
+                  <span className="text-[10px] text-[#6d7588] block">Hari ini oleh warga sekitar</span>
+                </div>
+
+                <div
+                  onClick={() => {
+                    setWarungTab('komisi');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="p-3 rounded-lg bg-[#ebf5e9]/70 border border-[#03ac0e]/20 space-y-1 hover:border-[#03ac0e] transition cursor-pointer"
+                >
+                  <span className="text-[11px] text-[#6d7588] block">Saldo Komisi</span>
+                  <span className="text-xl font-bold text-[#03ac0e] block">
+                    Rp {warungBalance.toLocaleString('id-ID')}
+                  </span>
+                  <span className="text-[10px] text-[#03ac0e] font-semibold block">+Rp 2.000 / paket selesai →</span>
+                </div>
+
+                <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
+                  <span className="text-[11px] text-[#6d7588] block">Rating Pelayanan</span>
+                  <span className="text-xl font-bold text-amber-500 block">4.9 / 5.0 ⭐</span>
+                  <span className="text-[10px] text-[#6d7588] block">Sangat ramah & tepat waktu</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Access Menu Cards for Warung */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              <div
+                onClick={() => {
+                  setWarungTab('validasi');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="p-4 rounded-xl bg-white border border-[#e5e7e9] hover:border-[#03ac0e] hover:shadow-xs transition cursor-pointer space-y-2 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-lg bg-[#ebf5e9] text-[#03ac0e] flex items-center justify-center text-lg">
+                    🏷️
+                  </div>
+                  <span className="text-xs font-semibold text-[#03ac0e] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    Buka Kasir <ChevronRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
-                <p className="text-xs text-[#6d7588] mt-0.5 truncate">
-                  Tebet Timur Raya No. 14, Jaksel • Cold Van Drop 06:45 WIB
+                <div>
+                  <h3 className="text-sm font-bold text-[#212121]">Mesin Kasir: Validasi PIN</h3>
+                  <p className="text-xs text-[#6d7588] mt-0.5">
+                    Minta 4 digit PIN dari konsumen saat serah terima paket sayur dan ikan segar.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                onClick={() => {
+                  setWarungTab('rak');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="p-4 rounded-xl bg-white border border-[#e5e7e9] hover:border-[#03ac0e] hover:shadow-xs transition cursor-pointer space-y-2 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                    📦
+                  </div>
+                  <span className="text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    Cek Rak ({orders.filter(o => o.status === 'ready').length}) <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#212121]">Inventori Rak Paket</h3>
+                  <p className="text-xs text-[#6d7588] mt-0.5">
+                    Lihat daftar seluruh paket pesanan yang tersimpan di rak dingin warung.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                onClick={() => {
+                  setWarungTab('komisi');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="p-4 rounded-xl bg-white border border-[#e5e7e9] hover:border-[#03ac0e] hover:shadow-xs transition cursor-pointer space-y-2 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-50 text-[#03ac0e] flex items-center justify-center text-lg">
+                    💰
+                  </div>
+                  <span className="text-xs font-semibold text-[#03ac0e] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    Rincian Saldo <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#212121]">Komisi & Tarik Saldo</h3>
+                  <p className="text-xs text-[#6d7588] mt-0.5">
+                    Saldo komisi Rp {warungBalance.toLocaleString('id-ID')} siap cair ke rekening bank Anda kapan saja.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Drop-Point Workflow Guide */}
+            <div className="p-4 rounded-xl bg-slate-50 border border-[#e5e7e9] space-y-2">
+              <h4 className="text-xs font-bold text-[#212121] flex items-center gap-1.5">
+                <Truck className="w-4 h-4 text-[#03ac0e]" />
+                <span>Alur Kerja Drop-Point Harian:</span>
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-[#6d7588]">
+                <div className="p-2.5 rounded-lg bg-white border border-[#e5e7e9]/60">
+                  <span className="font-bold text-[#212121] block">1. Drop Subuh (06:45)</span>
+                  <span>Armada Cold Van mengantar paket titipan warga ke warung Anda.</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-white border border-[#e5e7e9]/60">
+                  <span className="font-bold text-[#212121] block">2. Input PIN Pembeli</span>
+                  <span>Minta 4 digit PIN di aplikasi pembeli dan tekan tombol validasi.</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-white border border-[#e5e7e9]/60">
+                  <span className="font-bold text-[#03ac0e] block">3. Komisi Masuk Instan</span>
+                  <span>Rp 2.000 tunai langsung bertambah ke saldo dompet warung Anda.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUBPAGE 2: MESIN KASIR & VALIDASI PIN */}
+        {warungTab === 'validasi' && (
+          <div className="space-y-4 animate-fadeIn">
+            <div id="pin-input-section" className="bg-white rounded-xl p-4 sm:p-6 border border-[#e5e7e9] shadow-2xs space-y-5">
+              <div className="space-y-1 pb-3 border-b border-[#e5e7e9]">
+                <div className="flex items-center gap-2">
+                  <QrCode className="w-5 h-5 text-[#03ac0e]" />
+                  <h2 className="font-bold text-base sm:text-lg text-[#212121]">
+                    Mesin Kasir: Validasi PIN Pengambilan Konsumen
+                  </h2>
+                </div>
+                <p className="text-xs text-[#6d7588]">
+                  Minta 4 digit PIN yang tertera pada aplikasi PanenHub konsumen saat mengambil belanjaan di warung.
                 </p>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2 pt-1 sm:pt-0">
-              <button
-                onClick={() => {
-                  const pinEl = document.getElementById('pin-input-section');
-                  pinEl?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer outline-none"
-              >
-                <QrCode className="w-3.5 h-3.5" />
-                <span>Validasi PIN</span>
-              </button>
-              <button
-                onClick={() => showToast(`💰 Saldo komisi siap cair: Rp ${warungBalance.toLocaleString('id-ID')}`)}
-                className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-white border border-[#03ac0e] text-[#03ac0e] hover:bg-[#ebf5e9] text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer outline-none"
-              >
-                <Wallet className="w-3.5 h-3.5" />
-                <span>Tarik Komisi</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* 4 Stat Columns Tokopedia Mitra */}
-        <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-[#f3f4f5]">
-            <div className="flex items-center gap-2">
-              <Store className="w-4 h-4 text-[#03ac0e]" />
-              <h2 className="text-xs sm:text-sm font-bold text-[#212121]">Status Operasional Drop-Point</h2>
-            </div>
-            <span className="text-[11px] text-[#6d7588] hidden sm:inline">Update Real-time</span>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-1">
-            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
-              <span className="text-[11px] text-[#6d7588] block">Paket Siap di Rak</span>
-              <span className="text-xl font-bold text-[#212121] block">
-                {orders.filter(o => o.status === 'ready').length} Paket
-              </span>
-              <span className="text-[10px] text-[#03ac0e] font-semibold block">Menunggu diambil warga</span>
-            </div>
-
-            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
-              <span className="text-[11px] text-[#6d7588] block">Paket Selesai</span>
-              <span className="text-xl font-bold text-[#03ac0e] block">
-                {orders.filter(o => o.status === 'collected').length} Paket
-              </span>
-              <span className="text-[10px] text-[#6d7588] block">Hari ini oleh warga sekitar</span>
-            </div>
-
-            <div className="p-3 rounded-lg bg-[#ebf5e9]/70 border border-[#03ac0e]/20 space-y-1">
-              <span className="text-[11px] text-[#6d7588] block">Saldo Komisi</span>
-              <span className="text-xl font-bold text-[#03ac0e] block">
-                Rp {warungBalance.toLocaleString('id-ID')}
-              </span>
-              <span className="text-[10px] text-[#03ac0e] font-semibold block">+Rp 2.000 / paket selesai</span>
-            </div>
-
-            <div className="p-3 rounded-lg bg-[#f8f9fa] border border-[#e5e7e9]/60 space-y-1">
-              <span className="text-[11px] text-[#6d7588] block">Rating Pelayanan</span>
-              <span className="text-xl font-bold text-amber-500 block">4.9 / 5.0 ⭐</span>
-              <span className="text-[10px] text-[#6d7588] block">Sangat ramah & tepat waktu</span>
-            </div>
-          </div>
-        </div>
-
-        {/* PIN Validator Cashier Terminal */}
-        <div id="pin-input-section" className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4">
-          <div className="space-y-1 pb-3 border-b border-[#e5e7e9]">
-            <div className="flex items-center gap-2">
-              <QrCode className="w-4 h-4 text-[#03ac0e]" />
-              <h3 className="font-bold text-sm sm:text-base text-[#212121]">
-                Validasi PIN Pengambilan Konsumen
-              </h3>
-            </div>
-            <p className="text-xs text-[#6d7588]">
-              Masukkan 4 digit PIN yang tertera di tiket aplikasi PanenHub konsumen saat mengambil belanjaan.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <div className="relative w-full sm:w-64">
-              <input
-                type="text"
-                maxLength={4}
-                value={inputWarungPin}
-                onChange={(e) => setInputWarungPin(e.target.value)}
-                placeholder="4 Digit PIN"
-                className="w-full text-center tracking-widest text-2xl font-mono font-bold px-4 py-2 rounded-lg border border-[#e5e7e9] focus:border-[#03ac0e] focus:outline-none transition bg-white"
-              />
-            </div>
-
-            <button
-              onClick={handleValidateWarungPin}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white font-semibold text-xs transition shadow-2xs cursor-pointer outline-none flex items-center justify-center gap-2"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Verifikasi & Serahkan (+Rp 2.000)</span>
-            </button>
-
-            {/* Quick Helper Button to test auto-fill */}
-            {orders.find(o => o.status === 'ready') && (
-              <button
-                onClick={() => {
-                  const samplePin = orders.find(o => o.status === 'ready')?.pin || '';
-                  setInputWarungPin(samplePin);
-                }}
-                className="w-full sm:w-auto px-3.5 py-2.5 rounded-lg bg-[#f3f4f5] hover:bg-slate-200 text-[#6d7588] text-xs font-medium transition cursor-pointer outline-none whitespace-nowrap"
-              >
-                💡 Test PIN: <strong>{orders.find(o => o.status === 'ready')?.pin}</strong>
-              </button>
-            )}
-          </div>
-
-          {/* Feedback Banner */}
-          {warungFeedback && (
-            <div className={`p-3 rounded-lg text-xs font-medium flex items-center gap-2 animate-fadeIn ${
-              warungFeedback.includes('VALID')
-                ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
-                : 'bg-red-50 text-red-800 border border-red-300'
-            }`}>
-              <span>{warungFeedback}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Daftar Rak Paket yang Sedang Ada di Warung */}
-        <div id="rak-paket-section" className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-[#e5e7e9]">
-            <div>
-              <h3 className="font-semibold text-xs sm:text-sm text-[#212121]">
-                Daftar Paket di Rak Warung
-              </h3>
-              <p className="text-[11px] text-[#6d7588]">Tersimpan di rak dingin, siap diserahkan ke pembeli</p>
-            </div>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#f3f4f5] text-[#212121] font-medium border border-[#e5e7e9]">
-              {orders.length} Paket
-            </span>
-          </div>
-
-          <div className="space-y-2.5">
-            {orders.map((o) => (
-              <div
-                key={o.id}
-                className={`p-3.5 rounded-lg border transition flex flex-col md:flex-row md:items-center justify-between gap-3 ${
-                  o.status === 'ready'
-                    ? 'bg-white border-[#e5e7e9] hover:border-[#03ac0e]'
-                    : 'bg-slate-50 border-slate-200 opacity-75'
-                }`}
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs text-[#212121]">{o.id}</span>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                      o.status === 'ready'
-                        ? 'bg-emerald-100 text-[#03ac0e]'
-                        : 'bg-slate-200 text-slate-700'
-                    }`}>
-                      {o.status === 'ready' ? 'Siap di Rak Ambil' : '✅ Selesai Diambil'}
-                    </span>
+              {/* PIN Screen & Input */}
+              <div className="max-w-md mx-auto space-y-4 text-center">
+                <div className="space-y-2">
+                  <span className="text-xs text-[#6d7588] font-medium block">Nomor PIN Pembeli</span>
+                  <div className="flex items-center justify-center gap-2">
+                    {[0, 1, 2, 3].map((idx) => {
+                      const digit = inputWarungPin[idx] || '';
+                      return (
+                        <div
+                          key={idx}
+                          className={`w-14 h-16 rounded-xl border-2 flex items-center justify-center text-3xl font-mono font-black transition-all ${
+                            digit
+                              ? 'border-[#03ac0e] bg-emerald-50 text-[#03ac0e] shadow-xs'
+                              : 'border-slate-200 bg-[#f8f9fa] text-slate-400'
+                          }`}
+                        >
+                          {digit || '•'}
+                        </div>
+                      );
+                    })}
                   </div>
-                  <p className="text-xs text-[#6d7588]">
-                    Isi Paket: {o.items.map((it: any) => `${it.name} (${it.qty})`).join(', ')}
-                  </p>
-                  <span className="text-[11px] text-[#8d96aa]">
-                    Jadwal Pengambilan: {o.pickupTime} • Titik: {o.warung}
-                  </span>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="text-right">
-                    <span className="text-[10px] text-[#8d96aa] block uppercase">PIN Pelanggan</span>
-                    <span className="font-mono font-bold text-sm sm:text-base text-[#212121]">{o.pin}</span>
-                  </div>
-
-                  {o.status === 'ready' && (
+                {/* Touch Numpad */}
+                <div className="grid grid-cols-3 gap-2.5 pt-2 max-w-xs mx-auto">
+                  {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((k) => (
                     <button
+                      key={k}
                       onClick={() => {
-                        setInputWarungPin(o.pin);
-                        setTimeout(() => {
-                          handleValidateWarungPin();
-                        }, 50);
+                        if (k === 'C') {
+                          setInputWarungPin('');
+                        } else if (k === '⌫') {
+                          setInputWarungPin(prev => prev.slice(0, -1));
+                        } else {
+                          setInputWarungPin(prev => (prev.length < 4 ? prev + k : prev));
+                        }
                       }}
-                      className="px-3.5 py-1.5 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition cursor-pointer outline-none"
+                      className={`h-12 rounded-xl text-base sm:text-lg font-bold transition flex items-center justify-center cursor-pointer outline-none select-none shadow-2xs ${
+                        k === 'C'
+                          ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                          : k === '⌫'
+                          ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
+                          : 'bg-white hover:bg-slate-50 text-[#212121] border border-[#e5e7e9]'
+                      }`}
                     >
-                      Serahkan Paket
+                      {k}
                     </button>
-                  )}
+                  ))}
+                </div>
+
+                {/* Action Button */}
+                <button
+                  onClick={() => handleValidateWarungPin()}
+                  disabled={inputWarungPin.length < 4}
+                  className={`w-full py-3 rounded-xl font-bold text-sm transition shadow-2xs flex items-center justify-center gap-2 cursor-pointer outline-none ${
+                    inputWarungPin.length === 4
+                      ? 'bg-[#03ac0e] hover:bg-[#02980c] text-white shadow-xs'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>Verifikasi & Serahkan Paket (+Rp 2.000)</span>
+                </button>
+
+                {/* Quick Helper Button to test auto-fill */}
+                {orders.find(o => o.status === 'ready') && (
+                  <button
+                    onClick={() => {
+                      const samplePin = orders.find(o => o.status === 'ready')?.pin || '';
+                      setInputWarungPin(samplePin);
+                    }}
+                    className="w-full py-2 rounded-lg bg-[#f3f4f5] hover:bg-slate-200 text-[#6d7588] text-xs font-medium transition cursor-pointer outline-none"
+                  >
+                    💡 Test Auto-fill PIN: <strong>{orders.find(o => o.status === 'ready')?.pin}</strong>
+                  </button>
+                )}
+
+                {/* Feedback Banner */}
+                {warungFeedback && (
+                  <div className={`p-3.5 rounded-xl text-xs font-medium flex items-center gap-2 text-left animate-fadeIn ${
+                    warungFeedback.includes('VALID')
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                      : 'bg-red-50 text-red-800 border border-red-300'
+                  }`}>
+                    <span>{warungFeedback}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUBPAGE 3: INVENTORI RAK PAKET */}
+        {warungTab === 'rak' && (
+          <div id="rak-paket-section" className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-4 animate-fadeIn">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#e5e7e9]">
+              <div>
+                <h2 className="font-bold text-sm sm:text-base text-[#212121]">
+                  Daftar Rak Paket Pesanan Konsumen
+                </h2>
+                <p className="text-[11px] text-[#6d7588]">Tersimpan di rak pendingin warung, siap diserahkan ke pembeli</p>
+              </div>
+
+              {/* Filter Tabs */}
+              <div className="flex items-center gap-1.5 p-1 bg-[#f3f4f5] rounded-lg border border-[#e5e7e9] text-xs self-start sm:self-center">
+                <button
+                  onClick={() => setWarungRakFilter('all')}
+                  className={`px-2.5 py-1 rounded-md transition cursor-pointer outline-none ${
+                    warungRakFilter === 'all' ? 'bg-white text-[#212121] font-bold shadow-2xs' : 'text-[#6d7588]'
+                  }`}
+                >
+                  Semua ({orders.length})
+                </button>
+                <button
+                  onClick={() => setWarungRakFilter('ready')}
+                  className={`px-2.5 py-1 rounded-md transition cursor-pointer outline-none ${
+                    warungRakFilter === 'ready' ? 'bg-white text-[#03ac0e] font-bold shadow-2xs' : 'text-[#6d7588]'
+                  }`}
+                >
+                  Siap Diambil ({orders.filter(o => o.status === 'ready').length})
+                </button>
+                <button
+                  onClick={() => setWarungRakFilter('collected')}
+                  className={`px-2.5 py-1 rounded-md transition cursor-pointer outline-none ${
+                    warungRakFilter === 'collected' ? 'bg-white text-slate-700 font-bold shadow-2xs' : 'text-[#6d7588]'
+                  }`}
+                >
+                  Selesai ({orders.filter(o => o.status === 'collected').length})
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              {orders
+                .filter(o => {
+                  if (warungRakFilter === 'ready') return o.status === 'ready';
+                  if (warungRakFilter === 'collected') return o.status === 'collected';
+                  return true;
+                })
+                .map((o) => (
+                  <div
+                    key={o.id}
+                    className={`p-3.5 rounded-lg border transition flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                      o.status === 'ready'
+                        ? 'bg-white border-[#e5e7e9] hover:border-[#03ac0e]'
+                        : 'bg-slate-50 border-slate-200 opacity-75'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-[#212121]">{o.id}</span>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          o.status === 'ready'
+                            ? 'bg-emerald-100 text-[#03ac0e]'
+                            : 'bg-slate-200 text-slate-700'
+                        }`}>
+                          {o.status === 'ready' ? 'Siap di Rak Ambil' : '✅ Selesai Diambil'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#6d7588]">
+                        Isi Paket: {o.items.map((it: any) => `${it.name} (${it.qty})`).join(', ')}
+                      </p>
+                      <span className="text-[11px] text-[#8d96aa]">
+                        Jadwal Pengambilan: {o.pickupTime} • Titik: {o.warung}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="text-right">
+                        <span className="text-[10px] text-[#8d96aa] block uppercase">PIN Pelanggan</span>
+                        <span className="font-mono font-bold text-sm sm:text-base text-[#212121]">{o.pin}</span>
+                      </div>
+
+                      {o.status === 'ready' && (
+                        <button
+                          onClick={() => {
+                            handleValidateWarungPin(o.pin);
+                          }}
+                          className="px-3.5 py-1.5 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white text-xs font-semibold transition cursor-pointer outline-none"
+                        >
+                          Serahkan Paket
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* SUBPAGE 4: KOMISI & PENARIKAN SALDO */}
+        {warungTab === 'komisi' && (
+          <div className="space-y-4 animate-fadeIn">
+            {/* Commission Balance Card */}
+            <div className="bg-white rounded-xl border border-[#e5e7e9] p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <span className="text-xs text-[#6d7588] font-medium">Total Saldo Komisi Warung (Siap Cair)</span>
+                <span className="text-2xl sm:text-3xl font-black text-[#03ac0e] block">
+                  Rp {warungBalance.toLocaleString('id-ID')}
+                </span>
+                <p className="text-xs text-[#6d7588]">
+                  +Rp 2.000 untuk setiap paket yang berhasil diserahkan • Rekening: BCA (••••8920) a.n Siti Aminah
+                </p>
+              </div>
+              <button
+                onClick={handleWarungWithdraw}
+                className="px-5 py-2.5 rounded-lg bg-[#03ac0e] hover:bg-[#02980c] text-white font-semibold text-xs transition shadow-2xs cursor-pointer outline-none flex items-center justify-center gap-2 self-start sm:self-center"
+              >
+                <Wallet className="w-4 h-4" />
+                <span>Tarik Komisi ke Rekening</span>
+              </button>
+            </div>
+
+            {/* Riwayat Penerimaan Komisi */}
+            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#e5e7e9] shadow-2xs space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#e5e7e9]">
+                <h3 className="font-semibold text-xs sm:text-sm text-[#212121]">
+                  Riwayat Komisi Masuk
+                </h3>
+                <span className="text-[11px] text-[#6d7588]">Rp 2.000 / paket selesai</span>
+              </div>
+
+              <div className="divide-y divide-[#f3f4f5] text-xs">
+                {orders.filter(o => o.status === 'collected').map(o => (
+                  <div key={o.id} className="py-3 flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-[#212121]">Penyerahan Paket {o.id}</span>
+                      <p className="text-[11px] text-[#6d7588]">PIN: {o.pin} • Pelanggan telah mengambil belanjaan</p>
+                    </div>
+                    <span className="font-bold text-[#03ac0e] text-sm">+Rp 2.000</span>
+                  </div>
+                ))}
+                <div className="py-3 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-[#212121]">Penyerahan Paket #PNH-INV-2026092789</span>
+                    <p className="text-[11px] text-[#6d7588]">Kemarin 17:15 WIB • Pelanggan telah mengambil belanjaan</p>
+                  </div>
+                  <span className="font-bold text-[#03ac0e] text-sm">+Rp 2.000</span>
+                </div>
+                <div className="py-3 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-[#212121]">Penyerahan Paket #PNH-INV-2026092742</span>
+                    <p className="text-[11px] text-[#6d7588]">Kemarin 12:40 WIB • Pelanggan telah mengambil belanjaan</p>
+                  </div>
+                  <span className="font-bold text-[#03ac0e] text-sm">+Rp 2.000</span>
+                </div>
+                <div className="py-3 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-[#212121]">Penyerahan Paket #PNH-INV-2026092611</span>
+                    <p className="text-[11px] text-[#6d7588]">26 Sept 2026 • Pelanggan telah mengambil belanjaan</p>
+                  </div>
+                  <span className="font-bold text-[#03ac0e] text-sm">+Rp 2.000</span>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        )}
 
       </div>
     )}
@@ -3364,8 +3827,13 @@ export default function PanenHubTokopediaApp() {
           {activePov === 'producer' && (
             <>
               <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="flex flex-col items-center gap-0.5 p-1 text-[#03ac0e] font-semibold transition outline-none cursor-pointer"
+                onClick={() => {
+                  setProducerTab('ringkasan');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
+                  producerTab === 'ringkasan' ? 'text-[#03ac0e] font-bold' : 'hover:text-[#03ac0e]'
+                }`}
               >
                 <TrendingUp className="w-4 h-4" />
                 <span>Ringkasan</span>
@@ -3373,37 +3841,41 @@ export default function PanenHubTokopediaApp() {
 
               <button
                 onClick={() => {
-                  const el = document.getElementById('kuota-section');
-                  el?.scrollIntoView({ behavior: 'smooth' });
+                  setProducerTab('kuota');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#03ac0e]"
+                className={`flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
+                  producerTab === 'kuota' ? 'text-[#03ac0e] font-bold' : 'hover:text-[#03ac0e]'
+                }`}
               >
                 <Layers className="w-4 h-4" />
                 <span>Kuota</span>
               </button>
 
               <button
-                onClick={() => setIsDepositModalOpen(true)}
-                className="flex flex-col items-center gap-0.5 p-1 text-[#03ac0e] font-bold transition outline-none cursor-pointer"
+                onClick={() => {
+                  setProducerTab('setor');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
+                  producerTab === 'setor' ? 'text-[#03ac0e] font-bold' : 'hover:text-[#03ac0e]'
+                }`}
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Setor</span>
+                <span>Setoran QC</span>
               </button>
 
               <button
-                onClick={handleFarmerWithdraw}
-                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#03ac0e]"
+                onClick={() => {
+                  setProducerTab('keuangan');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
+                  producerTab === 'keuangan' ? 'text-[#03ac0e] font-bold' : 'hover:text-[#03ac0e]'
+                }`}
               >
-                <Wallet className="w-4 h-4 text-emerald-600" />
-                <span>Tarik Saldo</span>
-              </button>
-
-              <button
-                onClick={handleLogoutToGateway}
-                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#212121]"
-              >
-                <LogOut className="w-4 h-4 text-slate-500" />
-                <span>Ganti</span>
+                <Wallet className="w-4 h-4" />
+                <span>Keuangan</span>
               </button>
             </>
           )}
@@ -3411,8 +3883,13 @@ export default function PanenHubTokopediaApp() {
           {activePov === 'warung' && (
             <>
               <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="flex flex-col items-center gap-0.5 p-1 text-[#03ac0e] font-semibold transition outline-none cursor-pointer"
+                onClick={() => {
+                  setWarungTab('dashboard');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
+                  warungTab === 'dashboard' ? 'text-[#03ac0e] font-bold' : 'hover:text-[#03ac0e]'
+                }`}
               >
                 <Store className="w-4 h-4" />
                 <span>Warung</span>
@@ -3420,40 +3897,46 @@ export default function PanenHubTokopediaApp() {
 
               <button
                 onClick={() => {
-                  const el = document.getElementById('pin-input-section');
-                  el?.scrollIntoView({ behavior: 'smooth' });
+                  setWarungTab('validasi');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#03ac0e]"
+                className={`flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
+                  warungTab === 'validasi' ? 'text-[#03ac0e] font-bold' : 'hover:text-[#03ac0e]'
+                }`}
               >
                 <QrCode className="w-4 h-4" />
-                <span>Validasi</span>
+                <span>Validasi PIN</span>
               </button>
 
               <button
                 onClick={() => {
-                  const el = document.getElementById('rak-paket-section');
-                  el?.scrollIntoView({ behavior: 'smooth' });
+                  setWarungTab('rak');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#03ac0e]"
+                className={`relative flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
+                  warungTab === 'rak' ? 'text-[#03ac0e] font-bold' : 'hover:text-[#03ac0e]'
+                }`}
               >
                 <Layers className="w-4 h-4" />
                 <span>Rak Paket</span>
+                {orders.filter(o => o.status === 'ready').length > 0 && (
+                  <span className="absolute top-0 right-1 min-w-3.5 h-3.5 px-0.5 rounded-full bg-[#03ac0e] text-white text-[9px] font-medium flex items-center justify-center">
+                    {orders.filter(o => o.status === 'ready').length}
+                  </span>
+                )}
               </button>
 
               <button
-                onClick={() => showToast(`💰 Saldo Komisi Warung: Rp ${warungBalance.toLocaleString('id-ID')}`)}
-                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#03ac0e]"
+                onClick={() => {
+                  setWarungTab('komisi');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer ${
+                  warungTab === 'komisi' ? 'text-[#03ac0e] font-bold' : 'hover:text-[#03ac0e]'
+                }`}
               >
                 <Wallet className="w-4 h-4" />
                 <span>Komisi</span>
-              </button>
-
-              <button
-                onClick={handleLogoutToGateway}
-                className="flex flex-col items-center gap-0.5 p-1 transition outline-none cursor-pointer hover:text-[#212121]"
-              >
-                <LogOut className="w-4 h-4 text-slate-500" />
-                <span>Ganti</span>
               </button>
             </>
           )}
